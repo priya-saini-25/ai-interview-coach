@@ -100,6 +100,7 @@ exports.loginUser = async (req, res, next) => {
         email: user.email,
         role: user.role,
         profilePicture: user.profilePicture,
+        resume: user.resume,
       },
     });
   } catch (error) {
@@ -129,6 +130,7 @@ exports.getUserProfile = async (req, res, next) => {
         email: user.email,
         role: user.role,
         profilePicture: user.profilePicture,
+        resume: user.resume,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       }
@@ -209,6 +211,7 @@ exports.updateUserProfile = async (req, res, next) => {
         email: updatedUser.email,
         role: updatedUser.role,
         profilePicture: updatedUser.profilePicture,
+        resume: updatedUser.resume,
         createdAt: updatedUser.createdAt,
         updatedAt: updatedUser.updatedAt,
       },
@@ -221,4 +224,61 @@ exports.updateUserProfile = async (req, res, next) => {
     });
   }
 };
+
+// @desc    Upload user resume
+// @route   PUT /api/auth/resume
+// @access  Private
+exports.uploadResume = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No file uploaded',
+      });
+    }
+
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Delete old resume from Cloudinary if it exists
+    if (user.resumePublicId) {
+      const cloudinary = require('../config/cloudinary');
+      try {
+        await cloudinary.uploader.destroy(user.resumePublicId);
+      } catch (cloudinaryError) {
+        console.error('Error deleting old resume:', cloudinaryError);
+      }
+    }
+
+    // Update user with new resume URL and public_id
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.userId,
+      {
+        $set: {
+          resume: req.file.path, // Cloudinary secure_url
+          resumePublicId: req.file.filename, // Cloudinary public_id
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Resume uploaded successfully',
+      resume: updatedUser.resume,
+    });
+  } catch (error) {
+    console.error('Error uploading resume:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+};
+
 

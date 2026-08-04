@@ -31,6 +31,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    resume: {
+      type: String,
+      default: '',
+    },
+    resumePublicId: {
+      type: String,
+      default: null,
+    },
     role: {
       type: String,
       enum: ['user', 'admin'],
