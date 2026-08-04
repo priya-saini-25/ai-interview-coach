@@ -106,3 +106,96 @@ exports.loginUser = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Get user profile
+// @route   GET /api/auth/profile
+// @access  Private
+exports.getUserProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.userId).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profilePicture: user.profilePicture,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+};
+
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+exports.updateUserProfile = async (req, res, next) => {
+  try {
+    const { name, profilePicture } = req.body;
+
+    // Validate that name is not empty if it's provided in the body
+    if (name !== undefined && name.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Name cannot be empty',
+      });
+    }
+
+    // Build the update object with only allowed fields
+    const updateFields = {};
+    if (name) updateFields.name = name;
+    if (profilePicture !== undefined) updateFields.profilePicture = profilePicture;
+
+    // Use findByIdAndUpdate to efficiently update the user and return the new document
+    // We exclude the password from the returned document
+    const user = await User.findByIdAndUpdate(
+      req.user.userId,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profilePicture: user.profilePicture,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+};
+
