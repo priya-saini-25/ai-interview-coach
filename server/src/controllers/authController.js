@@ -147,7 +147,15 @@ exports.getUserProfile = async (req, res, next) => {
 // @access  Private
 exports.updateUserProfile = async (req, res, next) => {
   try {
-    const { name, profilePicture } = req.body;
+    const { name } = req.body;
+    
+    // Check if neither file nor name is provided
+    if (!req.file && req.body.name === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a name or a profile picture to update',
+      });
+    }
 
     // Validate that name is not empty if it's provided in the body
     if (name !== undefined && name.trim() === '') {
@@ -157,19 +165,8 @@ exports.updateUserProfile = async (req, res, next) => {
       });
     }
 
-    // Build the update object with only allowed fields
-    const updateFields = {};
-    if (name) updateFields.name = name;
-    if (profilePicture !== undefined) updateFields.profilePicture = profilePicture;
-
-    // Use findByIdAndUpdate to efficiently update the user and return the new document
-    // We exclude the password from the returned document
-    const user = await User.findByIdAndUpdate(
-      req.user.userId,
-      { $set: updateFields },
-      { new: true, runValidators: true }
-    ).select('-password');
-
+    // Fetch the user first to get the old profile picture public ID
+    const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -177,24 +174,50 @@ exports.updateUserProfile = async (req, res, next) => {
       });
     }
 
+    const updateFields = {};
+    if (name) updateFields.name = name;
+
+    // Handle new profile picture
+    if (req.file) {
+      updateFields.profilePicture = req.file.path; // Cloudinary secure_url
+      updateFields.profilePicturePublicId = req.file.filename; // Cloudinary public_id
+
+      // Delete old profile picture from Cloudinary
+      if (user.profilePicturePublicId) {
+        const cloudinary = require('../config/cloudinary');
+        try {
+          await cloudinary.uploader.destroy(user.profilePicturePublicId);
+        } catch (cloudinaryError) {
+          console.error('Error deleting old profile picture:', cloudinaryError);
+        }
+      }
+    }
+
+    // Update the user document
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.userId,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    ).select('-password -profilePicturePublicId');
+
     return res.status(200).json({
       success: true,
-      message: 'Profile updated successfully',
+      message: 'Profile picture updated successfully',
       user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        profilePicture: user.profilePicture,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        profilePicture: updatedUser.profilePicture,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt,
       },
     });
   } catch (error) {
     console.error('Error updating user profile:', error);
     return res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: 'Upload failure',
     });
   }
 };
