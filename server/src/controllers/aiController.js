@@ -1,6 +1,6 @@
 const User = require('../models/User');
-const ResumeAnalysis = require('../models/ResumeAnalysis');
 const { extractTextFromPDF } = require('../services/ai/pdfExtractionService');
+const { analyzeResumeWithGemini } = require('../services/ai/geminiService');
 
 // @desc    Analyze user resume
 // @route   POST /api/ai/analyze-resume
@@ -29,35 +29,24 @@ exports.analyzeResume = async (req, res, next) => {
     // 4. Extract text from the PDF via the AI service layer
     const rawText = await extractTextFromPDF(user.resume);
 
-    // 5. Upsert the ResumeAnalysis document
-    // If one exists for this user, update it. Otherwise, create a new one.
-    await ResumeAnalysis.findOneAndUpdate(
-      { user: user._id },
-      {
-        $set: {
-          user: user._id,
-          resumeUrl: user.resume,
-          rawText: rawText
-        }
-      },
-      { new: true, upsert: true, runValidators: true }
-    );
+    // 5. Analyze extracted resume text with Gemini AI service
+    const result = await analyzeResumeWithGemini(rawText);
 
-    // 6. Return success with the first 1000 characters
+    // 6. Return response with Gemini AI output
     return res.status(200).json({
       success: true,
-      message: 'Resume text extracted successfully.',
-      text: rawText.slice(0, 1000),
+      geminiResponse: result,
     });
 
   } catch (error) {
-    // Log the internal error for debugging but do not expose to the client
+    // Log the internal error for debugging
     console.error('Error in analyzeResume:', error.message);
 
     return res.status(500).json({
       success: false,
-      message: 'PDF extraction failed',
+      message: 'Resume analysis failed',
     });
   }
 };
+
 
