@@ -20,6 +20,7 @@ const authRoutes = require('./routes/authRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const roadmapRoutes = require('./routes/roadmapRoutes');
 const dsaRoutes = require('./routes/dsaRoutes');
+const readinessRoutes = require('./routes/readinessRoutes');
 
 // Health Check Route
 app.get('/api/health', (req, res) => {
@@ -31,6 +32,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/roadmap', roadmapRoutes);
 app.use('/api/dsa', dsaRoutes);
+app.use('/api/readiness', readinessRoutes);
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
