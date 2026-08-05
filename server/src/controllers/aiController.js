@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const ResumeAnalysis = require('../models/ResumeAnalysis');
 const { extractTextFromPDF } = require('../services/ai/pdfExtractionService');
 const { analyzeResumeWithGemini } = require('../services/ai/geminiService');
 
@@ -30,16 +31,71 @@ exports.analyzeResume = async (req, res, next) => {
     const rawText = await extractTextFromPDF(user.resume);
 
     // 5. Analyze extracted resume text with Gemini AI service
-    const result = await analyzeResumeWithGemini(rawText);
+    const geminiRawResponse = await analyzeResumeWithGemini(rawText);
 
-    // 6. Return response with Gemini AI output
+    // 6. Parse Gemini JSON response
+    let parsedAnalysis;
+    try {
+      parsedAnalysis = JSON.parse(geminiRawResponse);
+    } catch (parseError) {
+      console.error('JSON Parse Error:', parseError.message, 'Raw Response:', geminiRawResponse);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to parse AI response',
+      });
+    }
+
+    // Validate expected structure of parsed response
+    const isValidFormat =
+      parsedAnalysis &&
+      typeof parsedAnalysis.overallScore === 'number' &&
+      Array.isArray(parsedAnalysis.strengths) &&
+      Array.isArray(parsedAnalysis.weaknesses) &&
+      Array.isArray(parsedAnalysis.missingSkills) &&
+      Array.isArray(parsedAnalysis.atsSuggestions) &&
+      Array.isArray(parsedAnalysis.improvementSuggestions);
+
+    if (!isValidFormat) {
+      console.error('Invalid AI response structure:', parsedAnalysis);
+      return res.status(500).json({
+        success: false,
+        message: 'Invalid AI response format',
+      });
+    }
+
+    // 7. Save / Upsert analysis into MongoDB
+    const savedAnalysis = await ResumeAnalysis.findOneAndUpdate(
+      { user: user._id },
+      {
+        $set: {
+          user: user._id,
+          resumeUrl: user.resume,
+          rawText: rawText,
+          overallScore: parsedAnalysis.overallScore,
+          strengths: parsedAnalysis.strengths,
+          weaknesses: parsedAnalysis.weaknesses,
+          missingSkills: parsedAnalysis.missingSkills,
+          atsSuggestions: parsedAnalysis.atsSuggestions,
+          improvementSuggestions: parsedAnalysis.improvementSuggestions,
+        },
+      },
+      { new: true, upsert: true, runValidators: true }
+    );
+
+    // 8. Return response with analysis fields only
     return res.status(200).json({
       success: true,
-      geminiResponse: result,
+      analysis: {
+        overallScore: savedAnalysis.overallScore,
+        strengths: savedAnalysis.strengths,
+        weaknesses: savedAnalysis.weaknesses,
+        missingSkills: savedAnalysis.missingSkills,
+        atsSuggestions: savedAnalysis.atsSuggestions,
+        improvementSuggestions: savedAnalysis.improvementSuggestions,
+      },
     });
 
   } catch (error) {
-    // Log the internal error for debugging
     console.error('Error in analyzeResume:', error.message);
 
     return res.status(500).json({
@@ -48,5 +104,3 @@ exports.analyzeResume = async (req, res, next) => {
     });
   }
 };
-
-
