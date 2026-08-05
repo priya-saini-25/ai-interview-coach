@@ -87,3 +87,77 @@ exports.completeTopic = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @desc    Get all DSA topics for authenticated user with optional filters & sorting
+ * @route   GET /api/dsa/topics
+ * @access  Private
+ */
+exports.getAllTopics = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const { category, difficulty, completed } = req.query;
+
+    const filter = { user: userId };
+
+    if (category) {
+      filter.category = category;
+    }
+
+    if (difficulty) {
+      filter.difficulty = difficulty;
+    }
+
+    if (completed !== undefined) {
+      filter.completed = completed === 'true';
+    }
+
+    // Sort: pending topics first (completed: false), completed topics after, then newest first within each group
+    const topics = await DsaProgress.find(filter).sort({ completed: 1, createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: topics.length,
+      data: topics,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get DSA progress statistics for authenticated user
+ * @route   GET /api/dsa/stats
+ * @access  Private
+ */
+exports.getStats = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+
+    const [total, completed, pending, easy, medium, hard] = await Promise.all([
+      DsaProgress.countDocuments({ user: userId }),
+      DsaProgress.countDocuments({ user: userId, completed: true }),
+      DsaProgress.countDocuments({ user: userId, completed: false }),
+      DsaProgress.countDocuments({ user: userId, difficulty: 'Easy' }),
+      DsaProgress.countDocuments({ user: userId, difficulty: 'Medium' }),
+      DsaProgress.countDocuments({ user: userId, difficulty: 'Hard' }),
+    ]);
+
+    const completionPercentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+    return res.status(200).json({
+      success: true,
+      stats: {
+        total,
+        completed,
+        pending,
+        completionPercentage,
+        easy,
+        medium,
+        hard,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
