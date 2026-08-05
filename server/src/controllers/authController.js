@@ -245,23 +245,40 @@ exports.uploadResume = async (req, res, next) => {
       });
     }
 
+    const cloudinary = require('../config/cloudinary');
+
     // Delete old resume from Cloudinary if it exists
     if (user.resumePublicId) {
-      const cloudinary = require('../config/cloudinary');
       try {
-        await cloudinary.uploader.destroy(user.resumePublicId);
+        await cloudinary.uploader.destroy(user.resumePublicId, { resource_type: 'raw' });
       } catch (cloudinaryError) {
         console.error('Error deleting old resume:', cloudinaryError);
       }
     }
+
+    // Stream buffer to Cloudinary using upload_stream
+    const stream = require('stream');
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'ai_interview_coach_resumes',
+          resource_type: 'raw',
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+      stream.Readable.from(req.file.buffer).pipe(uploadStream);
+    });
 
     // Update user with new resume URL and public_id
     const updatedUser = await User.findByIdAndUpdate(
       req.user.userId,
       {
         $set: {
-          resume: req.file.path, // Cloudinary secure_url
-          resumePublicId: req.file.filename, // Cloudinary public_id
+          resume: result.secure_url,
+          resumePublicId: result.public_id,
         },
       },
       { new: true, runValidators: true }
