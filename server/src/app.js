@@ -18,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 // Import routes
 const authRoutes = require('./routes/authRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const roadmapRoutes = require('./routes/roadmapRoutes');
 
 // Health Check Route
 app.get('/api/health', (req, res) => {
@@ -27,6 +28,7 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/roadmap', roadmapRoutes);
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {

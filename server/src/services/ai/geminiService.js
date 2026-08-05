@@ -80,6 +80,89 @@ ${resumeText}`;
   throw new Error(`Gemini AI analysis failed: ${lastError?.message}`);
 };
 
+/**
+ * Generates a detailed 6-month placement preparation roadmap using Google Gemini AI.
+ * @param {Object} data - Candidate targeting details.
+ * @returns {Promise<string>} - The raw JSON string response from Gemini AI.
+ */
+const generateRoadmapWithGemini = async (data) => {
+  const { targetRole, targetCompany, currentYear, currentSkills, targetPackage } = data;
+
+  const modelsToTry = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-flash-latest'];
+
+  const prompt = `You are an expert career coach and technical interview strategist.
+Create a comprehensive 6-month preparation roadmap for a candidate with the following profile:
+- Target Role: ${targetRole}
+- Target Company: ${targetCompany}
+- Current Year / Level: ${currentYear}
+- Current Skills: ${Array.isArray(currentSkills) ? currentSkills.join(', ') : currentSkills || 'None specified'}
+- Target Package: ${targetPackage}
+
+Return ONLY a valid JSON object matching this exact schema:
+{
+  "roadmap": "A detailed 6-month roadmap in markdown format."
+}
+
+Requirements for the "roadmap" markdown content:
+- Include a Month-wise plan (Month 1 through Month 6).
+- Include Weekly goals for each month.
+- Include key Data Structures & Algorithms (DSA) topics.
+- Include essential Development topics relevant to ${targetRole}.
+- Recommend 2-3 portfolio-ready Projects to build.
+- Include Resume milestones and portfolio polishing timelines.
+- Include Interview preparation strategies (mock interviews, system design, behavioral prep).
+- Provide Company-specific advice tailored for ${targetCompany}.
+- Include a dedicated Final revision month plan (Month 6).
+
+Return raw JSON ONLY with no code block fences or extra text.`;
+
+  let lastError = null;
+
+  for (const modelName of modelsToTry) {
+    try {
+      console.log(`Attempting Gemini roadmap generation with model: ${modelName}`);
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+        },
+      });
+
+      let rawResponse = response.text ? response.text.trim() : '';
+      rawResponse = rawResponse.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '').trim();
+
+      return rawResponse;
+    } catch (error) {
+      lastError = error;
+
+      const errMsg = (error.message || '').toLowerCase();
+      const status = error.status || error.code;
+
+      const isUnavailableOrNotFound =
+        errMsg.includes('404') ||
+        errMsg.includes('not_found') ||
+        errMsg.includes('503') ||
+        errMsg.includes('unavailable') ||
+        errMsg.includes('high demand') ||
+        errMsg.includes('try again later') ||
+        status === 404 ||
+        status === 503;
+
+      if (isUnavailableOrNotFound) {
+        console.warn(`Model ${modelName} unavailable. Trying fallback model...`);
+        continue;
+      }
+
+      throw new Error(`Gemini AI roadmap generation failed with ${modelName}: ${error.message}`);
+    }
+  }
+
+  console.error('All fallback Gemini models failed:', lastError?.message);
+  throw new Error(`Gemini AI roadmap generation failed: ${lastError?.message}`);
+};
+
 module.exports = {
   analyzeResumeWithGemini,
+  generateRoadmapWithGemini,
 };
