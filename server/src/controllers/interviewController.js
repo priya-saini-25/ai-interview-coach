@@ -1,4 +1,5 @@
 const InterviewSession = require('../models/InterviewSession');
+const Notification = require('../models/Notification');
 const { generateInterviewQuestions, evaluateInterviewAnswers } = require('../services/ai/geminiService');
 
 /**
@@ -143,6 +144,14 @@ exports.submitInterview = async (req, res, next) => {
     session.completed = true;
 
     await session.save();
+
+    // Create notification for interview submission completion
+    await Notification.create({
+      user: userId,
+      title: 'Interview Feedback Ready',
+      message: 'Your AI interview evaluation is ready.',
+      type: 'interview',
+    });
 
     return res.status(200).json({
       success: true,

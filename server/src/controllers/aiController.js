@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const ResumeAnalysis = require('../models/ResumeAnalysis');
+const Notification = require('../models/Notification');
 const { extractTextFromPDF } = require('../services/ai/pdfExtractionService');
 const { analyzeResumeWithGemini } = require('../services/ai/geminiService');
 
@@ -81,6 +82,14 @@ exports.analyzeResume = async (req, res, next) => {
       },
       { new: true, upsert: true, runValidators: true }
     );
+
+    // Create notification for resume analysis completion
+    await Notification.create({
+      user: user._id,
+      title: 'Resume Analysis Completed',
+      message: 'Your resume has been analyzed successfully.',
+      type: 'resume',
+    });
 
     // 8. Return response with analysis fields only
     return res.status(200).json({

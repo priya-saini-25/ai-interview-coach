@@ -1,4 +1,5 @@
 const DsaProgress = require('../models/DsaProgress');
+const Notification = require('../models/Notification');
 
 /**
  * @desc    Add a new DSA topic to progress tracker
@@ -78,6 +79,14 @@ exports.completeTopic = async (req, res, next) => {
     dsaTopic.completedAt = new Date();
 
     const updatedTopic = await dsaTopic.save();
+
+    // Create notification for DSA topic completion
+    await Notification.create({
+      user: userId,
+      title: 'DSA Progress Updated',
+      message: 'Congratulations! You completed a DSA topic.',
+      type: 'dsa',
+    });
 
     return res.status(200).json({
       success: true,

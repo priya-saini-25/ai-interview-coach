@@ -23,6 +23,7 @@ const dsaRoutes = require('./routes/dsaRoutes');
 const readinessRoutes = require('./routes/readinessRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const interviewRoutes = require('./routes/interviewRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // Health Check Route
 app.get('/api/health', (req, res) => {
@@ -37,6 +38,7 @@ app.use('/api/dsa', dsaRoutes);
 app.use('/api/readiness', readinessRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/interview', interviewRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {

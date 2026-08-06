@@ -1,4 +1,5 @@
 const Roadmap = require('../models/Roadmap');
+const Notification = require('../models/Notification');
 const { generateRoadmapWithGemini } = require('../services/ai/geminiService');
 
 /**
@@ -76,6 +77,14 @@ exports.generateRoadmap = async (req, res, next) => {
         runValidators: true,
       }
     );
+
+    // Create notification for roadmap generation
+    await Notification.create({
+      user: userId,
+      title: 'Roadmap Generated',
+      message: 'Your personalized roadmap is ready.',
+      type: 'roadmap',
+    });
 
     return res.status(200).json({
       success: true,
