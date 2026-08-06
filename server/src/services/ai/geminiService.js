@@ -162,7 +162,168 @@ Return raw JSON ONLY with no code block fences or extra text.`;
   throw new Error(`Gemini AI roadmap generation failed: ${lastError?.message}`);
 };
 
+/**
+ * Generates 5 interview questions using Google Gemini AI based on role, difficulty, and company.
+ * @param {Object} data - Interview parameters ({ role, difficulty, company }).
+ * @returns {Promise<string>} - Raw JSON string from Gemini AI with questions array.
+ */
+const generateInterviewQuestions = async (data) => {
+  const { role, difficulty, company } = data;
+
+  const modelsToTry = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-flash-latest'];
+
+  const prompt = `You are an expert technical interviewer.
+Generate exactly 5 interview questions for a candidate applying for the role of "${role}"${company ? ` at "${company}"` : ''} with difficulty level "${difficulty || 'Medium'}".
+
+Return ONLY a valid JSON object matching this exact schema:
+{
+  "questions": [
+    "Question 1...",
+    "Question 2...",
+    "Question 3...",
+    "Question 4...",
+    "Question 5..."
+  ]
+}
+
+Instructions:
+- The "questions" array must contain EXACTLY 5 clear, relevant, and realistic interview questions tailored to the specified role, difficulty, and company.
+- Do NOT include any markdown formatting, code block fences (such as \`\`\`json), or conversational text.
+- Return raw JSON ONLY.`;
+
+  let lastError = null;
+
+  for (const modelName of modelsToTry) {
+    try {
+      console.log(`Attempting Gemini interview questions generation with model: ${modelName}`);
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+        },
+      });
+
+      let rawResponse = response.text ? response.text.trim() : '';
+      rawResponse = rawResponse.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '').trim();
+
+      return rawResponse;
+    } catch (error) {
+      lastError = error;
+
+      const errMsg = (error.message || '').toLowerCase();
+      const status = error.status || error.code;
+
+      const isUnavailableOrNotFound =
+        errMsg.includes('404') ||
+        errMsg.includes('not_found') ||
+        errMsg.includes('503') ||
+        errMsg.includes('unavailable') ||
+        errMsg.includes('high demand') ||
+        errMsg.includes('try again later') ||
+        status === 404 ||
+        status === 503;
+
+      if (isUnavailableOrNotFound) {
+        console.warn(`Model ${modelName} unavailable. Trying fallback model...`);
+        continue;
+      }
+
+      throw new Error(`Gemini AI question generation failed with ${modelName}: ${error.message}`);
+    }
+  }
+
+  console.error('All fallback Gemini models failed:', lastError?.message);
+  throw new Error(`Gemini AI question generation failed: ${lastError?.message}`);
+};
+
+/**
+ * Evaluates candidate interview answers using Google Gemini AI.
+ * @param {Object} data - Questions and candidate answers along with context ({ role, difficulty, company, questions, answers }).
+ * @returns {Promise<string>} - Raw JSON string from Gemini AI with score and feedback array.
+ */
+const evaluateInterviewAnswers = async (data) => {
+  const { role, difficulty, company, questions, answers } = data;
+
+  const modelsToTry = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-flash-latest'];
+
+  const qaFormatted = questions
+    .map((q, i) => `Q${i + 1}: ${q}\nCandidate Answer: ${answers[i] || 'No answer provided.'}`)
+    .join('\n\n');
+
+  const prompt = `You are an expert technical interviewer evaluating a candidate's responses for a "${role}" position${company ? ` at "${company}"` : ''} (Difficulty: "${difficulty || 'Medium'}").
+
+Here are the questions and candidate answers:
+
+${qaFormatted}
+
+Evaluate the candidate's answers overall and return ONLY a valid JSON object matching this exact schema:
+{
+  "score": 82,
+  "feedback": [
+    "Feedback for Question 1...",
+    "Feedback for Question 2...",
+    "Feedback for Question 3...",
+    "Feedback for Question 4...",
+    "Feedback for Question 5..."
+  ]
+}
+
+Instructions:
+- "score" must be an integer between 0 and 100 representing the overall interview performance score based on accuracy, depth, clarity, and relevance.
+- "feedback" must be an array of 5 concise, constructive, and actionable feedback strings evaluating each question's answer individually.
+- Do NOT include any markdown formatting, code block fences (such as \`\`\`json), or conversational text.
+- Return raw JSON ONLY.`;
+
+  let lastError = null;
+
+  for (const modelName of modelsToTry) {
+    try {
+      console.log(`Attempting Gemini interview evaluation with model: ${modelName}`);
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+        },
+      });
+
+      let rawResponse = response.text ? response.text.trim() : '';
+      rawResponse = rawResponse.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '').trim();
+
+      return rawResponse;
+    } catch (error) {
+      lastError = error;
+
+      const errMsg = (error.message || '').toLowerCase();
+      const status = error.status || error.code;
+
+      const isUnavailableOrNotFound =
+        errMsg.includes('404') ||
+        errMsg.includes('not_found') ||
+        errMsg.includes('503') ||
+        errMsg.includes('unavailable') ||
+        errMsg.includes('high demand') ||
+        errMsg.includes('try again later') ||
+        status === 404 ||
+        status === 503;
+
+      if (isUnavailableOrNotFound) {
+        console.warn(`Model ${modelName} unavailable. Trying fallback model...`);
+        continue;
+      }
+
+      throw new Error(`Gemini AI evaluation failed with ${modelName}: ${error.message}`);
+    }
+  }
+
+  console.error('All fallback Gemini models failed:', lastError?.message);
+  throw new Error(`Gemini AI evaluation failed: ${lastError?.message}`);
+};
+
 module.exports = {
   analyzeResumeWithGemini,
   generateRoadmapWithGemini,
+  generateInterviewQuestions,
+  evaluateInterviewAnswers,
 };
