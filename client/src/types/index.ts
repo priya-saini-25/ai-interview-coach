@@ -8,6 +8,8 @@ export interface User {
   college?: string;
   branch?: string;
   graduationYear?: string;
+  targetRole?: string;
+  targetCompany?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -77,8 +79,45 @@ export interface DsaTopic {
   category: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   completed: boolean;
+  savedForRevision?: boolean;
   completedAt?: string;
   createdAt?: string;
+}
+
+export interface DsaProblemExample {
+  input: string;
+  output: string;
+  explanation?: string;
+}
+
+export interface DsaProblem {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  topic: string;
+  category: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  companies: string[];
+  roles: string[];
+  tags: string[];
+  examples?: DsaProblemExample[];
+  constraints?: string[];
+  hints?: string[];
+  status?: 'Not Started' | 'In Progress' | 'Solved';
+  savedForRevision?: boolean;
+  solvedAt?: string;
+  progressId?: string;
+  score?: number;
+}
+
+export interface DsaRecommendationResponse {
+  targetRole: string;
+  targetCompany: string;
+  total: number;
+  solved: number;
+  inProgress: number;
+  problems: DsaProblem[];
 }
 
 export interface DsaStats {

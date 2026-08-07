@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { User as UserIcon, Mail, Camera, FileText, GraduationCap, GitBranch, Calendar } from 'lucide-react';
+import { User as UserIcon, Mail, Camera, FileText, GraduationCap, GitBranch, Calendar, Briefcase, Building } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services/authService';
 import { Card } from '../components/common/Card';
@@ -14,6 +14,8 @@ interface ProfileFormInputs {
   college: string;
   branch: string;
   graduationYear: string;
+  targetRole: string;
+  targetCompany: string;
 }
 
 export const ProfilePage: React.FC = () => {
@@ -29,6 +31,8 @@ export const ProfilePage: React.FC = () => {
       college: user?.college || '',
       branch: user?.branch || '',
       graduationYear: user?.graduationYear || '',
+      targetRole: user?.targetRole || '',
+      targetCompany: user?.targetCompany || '',
     },
   });
 
@@ -40,6 +44,8 @@ export const ProfilePage: React.FC = () => {
         college: user.college || '',
         branch: user.branch || '',
         graduationYear: user.graduationYear || '',
+        targetRole: user.targetRole || '',
+        targetCompany: user.targetCompany || '',
       });
       setAvatarPreview(user.profilePicture || null);
     }
@@ -61,6 +67,8 @@ export const ProfilePage: React.FC = () => {
       formData.append('college', data.college ? data.college.trim() : '');
       formData.append('branch', data.branch ? data.branch.trim() : '');
       formData.append('graduationYear', data.graduationYear ? data.graduationYear.trim() : '');
+      formData.append('targetRole', data.targetRole ? data.targetRole.trim() : '');
+      formData.append('targetCompany', data.targetCompany ? data.targetCompany.trim() : '');
 
       if (avatarFile) {
         formData.append('profilePicture', avatarFile);
@@ -80,7 +88,7 @@ export const ProfilePage: React.FC = () => {
     <div className="space-y-8 max-w-2xl mx-auto">
       <div className="glass-panel p-6 rounded-2xl border border-gray-800">
         <h1 className="text-2xl font-bold text-white">My Profile Settings</h1>
-        <p className="text-xs text-gray-400 mt-1">Manage your account information and avatar picture.</p>
+        <p className="text-xs text-gray-400 mt-1">Manage your account information, target career, and avatar picture.</p>
       </div>
 
       <Card className="p-8">
@@ -117,6 +125,26 @@ export const ProfilePage: React.FC = () => {
             leftIcon={<Mail className="w-4 h-4" />}
             helperText="Email address cannot be changed."
           />
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Input
+              label="Target Role"
+              placeholder="e.g. MERN Stack Developer"
+              leftIcon={<Briefcase className="w-4 h-4" />}
+              error={errors.targetRole?.message}
+              helperText="Used for personalized DSA & Placement recommendations"
+              {...register('targetRole')}
+            />
+
+            <Input
+              label="Target Company (Optional)"
+              placeholder="e.g. Amazon"
+              leftIcon={<Building className="w-4 h-4" />}
+              error={errors.targetCompany?.message}
+              helperText="Filter company-focused interview problems"
+              {...register('targetCompany')}
+            />
+          </div>
 
           <Input
             label="College"

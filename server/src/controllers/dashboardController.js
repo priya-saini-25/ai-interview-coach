@@ -2,6 +2,7 @@ const User = require('../models/User');
 const ResumeAnalysis = require('../models/ResumeAnalysis');
 const Roadmap = require('../models/Roadmap');
 const DsaProgress = require('../models/DsaProgress');
+const dsaQuestionBank = require('../data/dsaQuestionBank');
 
 /**
  * @desc    Get Dashboard Summary
@@ -13,12 +14,11 @@ exports.getDashboardSummary = async (req, res, next) => {
     const userId = req.user?.userId;
 
     // Concurrently fetch user profile, latest resume analysis, roadmap, and DSA counts
-    const [user, latestResumeAnalysis, roadmap, totalDsaTopics, completedDsaTopics] = await Promise.all([
+    const [user, latestResumeAnalysis, roadmap, userDsaProgress] = await Promise.all([
       User.findById(userId),
       ResumeAnalysis.findOne({ user: userId }).sort({ createdAt: -1 }),
       Roadmap.findOne({ user: userId }),
-      DsaProgress.countDocuments({ user: userId }),
-      DsaProgress.countDocuments({ user: userId, completed: true }),
+      DsaProgress.find({ user: userId }),
     ]);
 
     // Return 404 if user is not found
@@ -45,13 +45,22 @@ exports.getDashboardSummary = async (req, res, next) => {
       generated: !!roadmap,
     };
 
-    // Prepare DSA data
-    const pendingDsa = totalDsaTopics > 0 ? totalDsaTopics - completedDsaTopics : 0;
-    const completionPercentage = totalDsaTopics === 0 ? 0 : Math.round((completedDsaTopics / totalDsaTopics) * 100);
+    // Count unique solved problems (question bank + manual custom)
+    const solvedSet = new Set();
+    userDsaProgress.forEach((p) => {
+      if (p.completed || p.status === 'Solved') {
+        solvedSet.add(p.problemId || p.topic.toLowerCase());
+      }
+    });
+
+    const completedDsa = solvedSet.size;
+    const totalDsaTopics = Math.max(dsaQuestionBank.length, userDsaProgress.length);
+    const pendingDsa = Math.max(0, totalDsaTopics - completedDsa);
+    const completionPercentage = totalDsaTopics === 0 ? 0 : Math.round((completedDsa / totalDsaTopics) * 100);
 
     const dsaData = {
       total: totalDsaTopics,
-      completed: completedDsaTopics,
+      completed: completedDsa,
       pending: pendingDsa,
       completionPercentage,
     };
@@ -65,6 +74,8 @@ exports.getDashboardSummary = async (req, res, next) => {
           college: user.college || '',
           branch: user.branch || '',
           graduationYear: user.graduationYear || '',
+          targetRole: user.targetRole || '',
+          targetCompany: user.targetCompany || '',
         },
         resume: resumeData,
         roadmap: roadmapData,

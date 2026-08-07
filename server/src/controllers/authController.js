@@ -102,6 +102,8 @@ exports.loginUser = async (req, res, next) => {
         college: user.college || '',
         branch: user.branch || '',
         graduationYear: user.graduationYear || '',
+        targetRole: user.targetRole || '',
+        targetCompany: user.targetCompany || '',
         profilePicture: user.profilePicture,
         resume: user.resume,
       },
@@ -135,6 +137,8 @@ exports.getUserProfile = async (req, res, next) => {
         college: user.college || '',
         branch: user.branch || '',
         graduationYear: user.graduationYear || '',
+        targetRole: user.targetRole || '',
+        targetCompany: user.targetCompany || '',
         profilePicture: user.profilePicture,
         resume: user.resume,
         createdAt: user.createdAt,
@@ -155,7 +159,7 @@ exports.getUserProfile = async (req, res, next) => {
 // @access  Private
 exports.updateUserProfile = async (req, res, next) => {
   try {
-    const { name, college, branch, graduationYear } = req.body;
+    const { name, college, branch, graduationYear, targetRole, targetCompany } = req.body;
     
     // Check if neither file nor profile details are provided
     if (
@@ -163,7 +167,9 @@ exports.updateUserProfile = async (req, res, next) => {
       name === undefined &&
       college === undefined &&
       branch === undefined &&
-      graduationYear === undefined
+      graduationYear === undefined &&
+      targetRole === undefined &&
+      targetCompany === undefined
     ) {
       return res.status(400).json({
         success: false,
@@ -193,6 +199,8 @@ exports.updateUserProfile = async (req, res, next) => {
     if (college !== undefined) updateFields.college = college.trim();
     if (branch !== undefined) updateFields.branch = branch.trim();
     if (graduationYear !== undefined) updateFields.graduationYear = graduationYear.trim();
+    if (targetRole !== undefined) updateFields.targetRole = targetRole.trim();
+    if (targetCompany !== undefined) updateFields.targetCompany = targetCompany.trim();
 
     // Handle new profile picture
     if (req.file) {
@@ -228,6 +236,8 @@ exports.updateUserProfile = async (req, res, next) => {
         college: updatedUser.college || '',
         branch: updatedUser.branch || '',
         graduationYear: updatedUser.graduationYear || '',
+        targetRole: updatedUser.targetRole || '',
+        targetCompany: updatedUser.targetCompany || '',
         profilePicture: updatedUser.profilePicture,
         resume: updatedUser.resume,
         createdAt: updatedUser.createdAt,

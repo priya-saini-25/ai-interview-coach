@@ -2,6 +2,7 @@ const User = require('../models/User');
 const ResumeAnalysis = require('../models/ResumeAnalysis');
 const Roadmap = require('../models/Roadmap');
 const DsaProgress = require('../models/DsaProgress');
+const dsaQuestionBank = require('../data/dsaQuestionBank');
 
 /**
  * @desc    Get user's dynamic Placement Readiness Score
@@ -13,12 +14,11 @@ exports.getReadinessScore = async (req, res, next) => {
     const userId = req.user?.userId;
 
     // Concurrently fetch user profile, latest resume analysis, roadmap, and DSA progress counts
-    const [user, latestResumeAnalysis, roadmap, totalDsaTopics, completedDsaTopics] = await Promise.all([
+    const [user, latestResumeAnalysis, roadmap, userDsaProgress] = await Promise.all([
       User.findById(userId),
       ResumeAnalysis.findOne({ user: userId }).sort({ createdAt: -1 }),
       Roadmap.findOne({ user: userId }),
-      DsaProgress.countDocuments({ user: userId }),
-      DsaProgress.countDocuments({ user: userId, completed: true }),
+      DsaProgress.find({ user: userId }),
     ]);
 
     // Handle user not found case
@@ -29,8 +29,8 @@ exports.getReadinessScore = async (req, res, next) => {
       });
     }
 
-    // 1. Calculate Profile Completion (7 fields: name, email, college, branch, graduationYear, skills, resume)
-    const profileFields = ['name', 'email', 'college', 'branch', 'graduationYear', 'skills', 'resume'];
+    // 1. Calculate Profile Completion
+    const profileFields = ['name', 'email', 'college', 'branch', 'graduationYear', 'skills', 'resume', 'targetRole'];
     let completedFieldsCount = 0;
 
     for (const field of profileFields) {
@@ -55,6 +55,16 @@ exports.getReadinessScore = async (req, res, next) => {
     const roadmapProgress = roadmap ? 100 : 0;
 
     // 4. Calculate DSA Progress
+    const solvedSet = new Set();
+    userDsaProgress.forEach((p) => {
+      if (p.completed || p.status === 'Solved') {
+        solvedSet.add(p.problemId || p.topic.toLowerCase());
+      }
+    });
+
+    const completedDsaTopics = solvedSet.size;
+    const totalDsaTopics = Math.max(dsaQuestionBank.length, userDsaProgress.length);
+
     const dsaProgress = totalDsaTopics === 0
       ? 0
       : Math.round((completedDsaTopics / totalDsaTopics) * 100);

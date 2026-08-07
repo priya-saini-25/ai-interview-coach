@@ -7,6 +7,10 @@ const dsaProgressSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    problemId: {
+      type: String,
+      default: null,
+    },
     topic: {
       type: String,
       required: true,
@@ -20,12 +24,21 @@ const dsaProgressSchema = new mongoose.Schema(
       enum: ['Easy', 'Medium', 'Hard'],
       default: 'Medium',
     },
+    status: {
+      type: String,
+      enum: ['Not Started', 'In Progress', 'Solved'],
+      default: 'Not Started',
+    },
     completed: {
       type: Boolean,
       default: false,
     },
     completedAt: {
       type: Date,
+    },
+    savedForRevision: {
+      type: Boolean,
+      default: false,
     },
   },
   {
