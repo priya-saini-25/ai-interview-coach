@@ -23,6 +23,21 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Please provide a password'],
       minlength: [6, 'Password must be at least 6 characters'],
     },
+    college: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    branch: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    graduationYear: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     profilePicture: {
       type: String,
       default: '',

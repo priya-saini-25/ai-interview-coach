@@ -3,6 +3,32 @@ const Notification = require('../models/Notification');
 const { generateRoadmapWithGemini } = require('../services/ai/geminiService');
 
 /**
+ * @desc    Get user's saved placement roadmap
+ * @route   GET /api/roadmap
+ * @access  Private
+ */
+exports.getRoadmap = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const roadmapData = await Roadmap.findOne({ user: userId });
+
+    if (!roadmapData) {
+      return res.status(200).json({
+        success: true,
+        roadmap: null,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      roadmap: roadmapData.roadmap,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * @desc    Generate AI Placement Roadmap
  * @route   POST /api/roadmap/generate
  * @access  Private

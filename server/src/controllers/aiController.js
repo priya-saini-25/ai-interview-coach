@@ -4,6 +4,40 @@ const Notification = require('../models/Notification');
 const { extractTextFromPDF } = require('../services/ai/pdfExtractionService');
 const { analyzeResumeWithGemini } = require('../services/ai/geminiService');
 
+// @desc    Get user's latest resume analysis
+// @route   GET /api/ai/resume-analysis
+// @access  Private
+exports.getResumeAnalysis = async (req, res, next) => {
+  try {
+    const analysis = await ResumeAnalysis.findOne({ user: req.user.userId }).sort({ createdAt: -1 });
+
+    if (!analysis) {
+      return res.status(200).json({
+        success: true,
+        analysis: null,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      analysis: {
+        overallScore: analysis.overallScore,
+        strengths: analysis.strengths,
+        weaknesses: analysis.weaknesses,
+        missingSkills: analysis.missingSkills,
+        atsSuggestions: analysis.atsSuggestions,
+        improvementSuggestions: analysis.improvementSuggestions,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching resume analysis:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch resume analysis',
+    });
+  }
+};
+
 // @desc    Analyze user resume
 // @route   POST /api/ai/analyze-resume
 // @access  Private

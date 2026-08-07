@@ -28,6 +28,14 @@ exports.addTopic = async (req, res, next) => {
       completed: false,
     });
 
+    // Create notification for adding DSA topic
+    await Notification.create({
+      user: userId,
+      title: 'DSA Progress Updated',
+      message: `Your DSA progress has been updated successfully. Added "${topic}".`,
+      type: 'dsa',
+    });
+
     return res.status(201).json({
       success: true,
       data: dsaTopic,
@@ -84,7 +92,7 @@ exports.completeTopic = async (req, res, next) => {
     await Notification.create({
       user: userId,
       title: 'DSA Progress Updated',
-      message: 'Congratulations! You completed a DSA topic.',
+      message: `Your DSA progress has been updated successfully. Completed "${dsaTopic.topic}".`,
       type: 'dsa',
     });
 

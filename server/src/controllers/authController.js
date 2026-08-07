@@ -99,6 +99,9 @@ exports.loginUser = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        college: user.college || '',
+        branch: user.branch || '',
+        graduationYear: user.graduationYear || '',
         profilePicture: user.profilePicture,
         resume: user.resume,
       },
@@ -129,6 +132,9 @@ exports.getUserProfile = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        college: user.college || '',
+        branch: user.branch || '',
+        graduationYear: user.graduationYear || '',
         profilePicture: user.profilePicture,
         resume: user.resume,
         createdAt: user.createdAt,
@@ -149,13 +155,19 @@ exports.getUserProfile = async (req, res, next) => {
 // @access  Private
 exports.updateUserProfile = async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, college, branch, graduationYear } = req.body;
     
-    // Check if neither file nor name is provided
-    if (!req.file && req.body.name === undefined) {
+    // Check if neither file nor profile details are provided
+    if (
+      !req.file &&
+      name === undefined &&
+      college === undefined &&
+      branch === undefined &&
+      graduationYear === undefined
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide a name or a profile picture to update',
+        message: 'Please provide profile details or a profile picture to update',
       });
     }
 
@@ -177,7 +189,10 @@ exports.updateUserProfile = async (req, res, next) => {
     }
 
     const updateFields = {};
-    if (name) updateFields.name = name;
+    if (name !== undefined) updateFields.name = name.trim();
+    if (college !== undefined) updateFields.college = college.trim();
+    if (branch !== undefined) updateFields.branch = branch.trim();
+    if (graduationYear !== undefined) updateFields.graduationYear = graduationYear.trim();
 
     // Handle new profile picture
     if (req.file) {
@@ -204,12 +219,15 @@ exports.updateUserProfile = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Profile picture updated successfully',
+      message: 'Profile updated successfully',
       user: {
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
+        college: updatedUser.college || '',
+        branch: updatedUser.branch || '',
+        graduationYear: updatedUser.graduationYear || '',
         profilePicture: updatedUser.profilePicture,
         resume: updatedUser.resume,
         createdAt: updatedUser.createdAt,
@@ -220,7 +238,7 @@ exports.updateUserProfile = async (req, res, next) => {
     console.error('Error updating user profile:', error);
     return res.status(500).json({
       success: false,
-      message: 'Upload failure',
+      message: 'Failed to update profile',
     });
   }
 };
