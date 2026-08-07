@@ -12,6 +12,7 @@ import { DsaTrackerPage } from '../pages/DsaTrackerPage';
 import { InterviewCoachPage } from '../pages/InterviewCoachPage';
 import { NotificationsPage } from '../pages/NotificationsPage';
 import { ProfilePage } from '../pages/ProfilePage';
+import { MentorPage } from '../pages/MentorPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { useAuth } from '../hooks/useAuth';
 
@@ -37,6 +38,7 @@ export const AppRoutes: React.FC = () => {
       <Route element={<ProtectedRoute />}>
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/mentor" element={<MentorPage />} />
           <Route path="/resume" element={<ResumeAnalyzerPage />} />
           <Route path="/roadmap" element={<RoadmapPage />} />
           <Route path="/dsa" element={<DsaTrackerPage />} />

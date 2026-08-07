@@ -341,9 +341,99 @@ Instructions:
   throw new Error(`Gemini AI evaluation failed: ${lastError?.message}`);
 };
 
+/**
+ * Chat with AI Placement Mentor using Google Gemini AI.
+ * @param {Object} params - { userContext, chatHistory, userMessage }
+ * @returns {Promise<string>} - Assistant Markdown response text.
+ */
+const chatWithMentorWithGemini = async ({ userContext, chatHistory = [], userMessage }) => {
+  const modelsToTry = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-flash-latest'];
+
+  const { profile, resume, roadmap, dsa, interviews, readinessScore } = userContext;
+
+  const formattedHistory = chatHistory
+    .map((msg) => `${msg.role === 'user' ? 'Candidate' : 'AI Mentor'}: ${msg.content}`)
+    .join('\n\n');
+
+  const prompt = `You are an experienced, empathetic software engineering placement mentor helping an engineering candidate prepare for tech placement, internships, and entry-level developer roles.
+
+CANDIDATE PLACEMENT CONTEXT:
+- Candidate Name: ${profile.name || 'Candidate'}
+- Target Role: ${profile.targetRole || 'Software Engineer (Not specified)'}
+- Target Company: ${profile.targetCompany || 'General Tech Companies'}
+- Overall Placement Readiness Score: ${readinessScore}/100
+- ATS Resume Score: ${resume.hasResume ? `${resume.atsScore}/100` : 'Resume Not Uploaded Yet'}
+  * Key Strengths: ${resume.strengths && resume.strengths.length > 0 ? resume.strengths.join('; ') : 'None recorded'}
+  * Key Weaknesses / Missing Skills: ${resume.missingSkills && resume.missingSkills.length > 0 ? resume.missingSkills.join('; ') : 'None recorded'}
+- Roadmap Generated: ${roadmap.generated ? 'Yes (6-month plan ready)' : 'No'}
+- Data Structures & Algorithms (DSA): ${dsa.solvedCount}/${dsa.totalProblems} solved (${dsa.completionPercentage}% completion rate), ${dsa.savedForRevisionCount} saved for revision. (Breakdown: Easy: ${dsa.easySolved}, Medium: ${dsa.mediumSolved}, Hard: ${dsa.hardSolved})
+- Mock Interview History: ${interviews.completedSessionsCount} sessions completed, average score: ${interviews.averageScore}/100.
+
+MENTOR INSTRUCTIONS:
+- Give practical, encouraging, and highly specific guidance tailored to the candidate's target role (${profile.targetRole || 'Software Engineering'}) and target company (${profile.targetCompany || 'General'}).
+- Reference the candidate's actual metrics (e.g. DSA progress, ATS score, mock interview score) when answering questions about readiness or next steps.
+- If the candidate asks about company preparation, use realistic and cautious wording (e.g., "Common interview patterns reported for ${profile.targetCompany || 'this company'} include...").
+- Offer actionable next steps (e.g., 7-day action plan, specific DSA topics, resume tweaks, or mock interview recommendations).
+- Format your response clearly in rich Markdown using bullet points, bold key terms, numbered steps, and code snippets when explaining DSA concepts.
+- Keep responses engaging, structured, and easy to read.
+
+${formattedHistory ? `RECENT CONVERSATION HISTORY:\n${formattedHistory}\n\n` : ''}Candidate Question:
+${userMessage}`;
+
+  let lastError = null;
+
+  for (const modelName of modelsToTry) {
+    try {
+      console.log(`Attempting Gemini AI mentor chat with model: ${modelName}`);
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: prompt,
+      });
+
+      const replyText = response.text ? response.text.trim() : '';
+      if (!replyText) {
+        throw new Error('Gemini returned an empty response.');
+      }
+
+      return replyText;
+    } catch (error) {
+      lastError = error;
+
+      const errMsg = (error.message || '').toLowerCase();
+      const status = error.status || error.code;
+
+      const isUnavailableOrNotFound =
+        errMsg.includes('404') ||
+        errMsg.includes('not_found') ||
+        errMsg.includes('503') ||
+        errMsg.includes('unavailable') ||
+        errMsg.includes('high demand') ||
+        errMsg.includes('try again later') ||
+        errMsg.includes('429') ||
+        errMsg.includes('quota') ||
+        errMsg.includes('resource_exhausted') ||
+        errMsg.includes('rate limit') ||
+        status === 404 ||
+        status === 503 ||
+        status === 429;
+
+      if (isUnavailableOrNotFound) {
+        console.warn(`Model ${modelName} unavailable for mentor chat. Trying fallback model...`);
+        continue;
+      }
+
+      throw new Error(`Gemini AI mentor chat failed with ${modelName}: ${error.message}`);
+    }
+  }
+
+  console.error('All fallback Gemini models failed for mentor chat:', lastError?.message);
+  throw new Error(`Gemini AI mentor chat failed: ${lastError?.message}`);
+};
+
 module.exports = {
   analyzeResumeWithGemini,
   generateRoadmapWithGemini,
   generateInterviewQuestions,
   evaluateInterviewAnswers,
+  chatWithMentorWithGemini,
 };

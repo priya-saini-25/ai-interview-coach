@@ -155,6 +155,18 @@ export interface NotificationItem {
   updatedAt: string;
 }
 
+export interface MentorMessage {
+  _id?: string;
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt?: string;
+}
+
+export interface MentorChatResponse {
+  reply: string;
+  messages: MentorMessage[];
+}
+
 export interface ApiResponse<T = any> {
   success: boolean;
   message?: string;
@@ -162,4 +174,6 @@ export interface ApiResponse<T = any> {
   count?: number;
   token?: string;
   user?: User;
+  reply?: string;
+  messages?: MentorMessage[];
 }

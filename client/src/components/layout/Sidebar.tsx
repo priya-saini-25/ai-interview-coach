@@ -10,11 +10,13 @@ import {
   User,
   LogOut,
   Sparkles,
+  Bot,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { name: 'AI Mentor', path: '/mentor', icon: Bot },
   { name: 'Resume Analyzer', path: '/resume', icon: FileText },
   { name: 'AI Roadmap', path: '/roadmap', icon: Compass },
   { name: 'DSA Tracker', path: '/dsa', icon: Code2 },
