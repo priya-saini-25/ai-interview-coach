@@ -64,8 +64,13 @@ ${resumeText}`;
         errMsg.includes('unavailable') ||
         errMsg.includes('high demand') ||
         errMsg.includes('try again later') ||
+        errMsg.includes('429') ||
+        errMsg.includes('quota') ||
+        errMsg.includes('resource_exhausted') ||
+        errMsg.includes('rate limit') ||
         status === 404 ||
-        status === 503;
+        status === 503 ||
+        status === 429;
 
       if (isUnavailableOrNotFound) {
         console.warn(`Model ${modelName} unavailable. Trying fallback model...`);
@@ -146,8 +151,13 @@ Return raw JSON ONLY with no code block fences or extra text.`;
         errMsg.includes('unavailable') ||
         errMsg.includes('high demand') ||
         errMsg.includes('try again later') ||
+        errMsg.includes('429') ||
+        errMsg.includes('quota') ||
+        errMsg.includes('resource_exhausted') ||
+        errMsg.includes('rate limit') ||
         status === 404 ||
-        status === 503;
+        status === 503 ||
+        status === 429;
 
       if (isUnavailableOrNotFound) {
         console.warn(`Model ${modelName} unavailable. Trying fallback model...`);
@@ -221,8 +231,13 @@ Instructions:
         errMsg.includes('unavailable') ||
         errMsg.includes('high demand') ||
         errMsg.includes('try again later') ||
+        errMsg.includes('429') ||
+        errMsg.includes('quota') ||
+        errMsg.includes('resource_exhausted') ||
+        errMsg.includes('rate limit') ||
         status === 404 ||
-        status === 503;
+        status === 503 ||
+        status === 429;
 
       if (isUnavailableOrNotFound) {
         console.warn(`Model ${modelName} unavailable. Trying fallback model...`);
@@ -305,8 +320,13 @@ Instructions:
         errMsg.includes('unavailable') ||
         errMsg.includes('high demand') ||
         errMsg.includes('try again later') ||
+        errMsg.includes('429') ||
+        errMsg.includes('quota') ||
+        errMsg.includes('resource_exhausted') ||
+        errMsg.includes('rate limit') ||
         status === 404 ||
-        status === 503;
+        status === 503 ||
+        status === 429;
 
       if (isUnavailableOrNotFound) {
         console.warn(`Model ${modelName} unavailable. Trying fallback model...`);

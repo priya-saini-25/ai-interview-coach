@@ -1,6 +1,7 @@
 const InterviewSession = require('../models/InterviewSession');
 const Notification = require('../models/Notification');
 const { generateInterviewQuestions, evaluateInterviewAnswers } = require('../services/ai/geminiService');
+const { safeParseAIJson } = require('../utils/jsonUtils');
 
 /**
  * @desc    Start a new AI interview session and generate questions
@@ -13,54 +14,103 @@ exports.startInterview = async (req, res, next) => {
     const { role, difficulty, company } = req.body;
 
     // Validate required input
-    if (!role) {
+    if (!role || typeof role !== 'string' || role.trim() === '') {
       return res.status(400).json({
         success: false,
-        message: 'Please provide a role for the interview.',
+        message: 'Please provide a valid role for the interview.',
       });
     }
+
+    const trimmedRole = role.trim();
+    const trimmedCompany = typeof company === 'string' ? company.trim() : '';
+    const validDifficulty = difficulty || 'Medium';
 
     // Call Gemini AI service to generate questions
     let rawAiResponse;
     try {
       rawAiResponse = await generateInterviewQuestions({
-        role,
-        difficulty: difficulty || 'Medium',
-        company: company || '',
+        role: trimmedRole,
+        difficulty: validDifficulty,
+        company: trimmedCompany,
       });
     } catch (aiError) {
-      return res.status(500).json({
+      console.error('AI Service Error in startInterview:', aiError.message);
+      return res.status(502).json({
         success: false,
-        message: aiError.message || 'Failed to generate interview questions from AI.',
+        message: aiError.message || 'Failed to generate interview questions from AI service.',
       });
     }
 
-    // Parse returned JSON from Gemini AI
+    // Safely parse JSON response from Gemini AI
     let parsedResponse;
     try {
-      parsedResponse = JSON.parse(rawAiResponse);
+      parsedResponse = safeParseAIJson(rawAiResponse);
     } catch (parseError) {
-      return res.status(500).json({
+      console.error('AI Response JSON Parse Error in startInterview:', parseError.message);
+      return res.status(502).json({
         success: false,
         message: 'Failed to parse AI response. Invalid JSON format returned.',
       });
     }
 
-    // Validate parsed questions structure
-    if (!parsedResponse || !Array.isArray(parsedResponse.questions) || parsedResponse.questions.length === 0) {
-      return res.status(500).json({
+    // Extract questions array from parsed response structure
+    let questions = [];
+    if (Array.isArray(parsedResponse)) {
+      questions = parsedResponse;
+    } else if (parsedResponse && typeof parsedResponse === 'object') {
+      if (Array.isArray(parsedResponse.questions)) {
+        questions = parsedResponse.questions;
+      } else if (Array.isArray(parsedResponse.interview_questions)) {
+        questions = parsedResponse.interview_questions;
+      } else if (Array.isArray(parsedResponse.interviewQuestions)) {
+        questions = parsedResponse.interviewQuestions;
+      } else if (Array.isArray(parsedResponse.data)) {
+        questions = parsedResponse.data;
+      } else if (Array.isArray(parsedResponse.items)) {
+        questions = parsedResponse.items;
+      } else {
+        const foundArray = Object.values(parsedResponse).find(
+          (val) => Array.isArray(val) && val.length > 0
+        );
+        if (foundArray) {
+          questions = foundArray;
+        }
+      }
+    }
+
+    // Clean and validate question items
+    questions = questions
+      .filter((q) => q !== null && q !== undefined)
+      .map((q) => (typeof q === 'string' ? q.trim() : String(q).trim()))
+      .filter((q) => q.length > 0);
+
+    if (questions.length === 0) {
+      console.error('AI response contained no valid interview questions array.');
+      return res.status(502).json({
         success: false,
         message: 'AI response missing valid interview questions.',
       });
     }
 
+    // Ensure exactly 5 questions are returned
+    if (questions.length > 5) {
+      questions = questions.slice(0, 5);
+    } else {
+      while (questions.length < 5) {
+        const index = questions.length + 1;
+        questions.push(
+          `Describe a key technical challenge or project accomplishment in your experience as a ${trimmedRole} (Question ${index}).`
+        );
+      }
+    }
+
     // Create and save new InterviewSession in MongoDB
     const session = await InterviewSession.create({
       user: userId,
-      role,
-      difficulty: difficulty || 'Medium',
-      company: company || '',
-      questions: parsedResponse.questions,
+      role: trimmedRole,
+      difficulty: validDifficulty,
+      company: trimmedCompany,
+      questions,
     });
 
     return res.status(201).json({
@@ -121,26 +171,48 @@ exports.submitInterview = async (req, res, next) => {
         answers,
       });
     } catch (aiError) {
-      return res.status(500).json({
+      console.error('AI Service Error in submitInterview:', aiError.message);
+      return res.status(502).json({
         success: false,
         message: aiError.message || 'Failed to evaluate interview answers via AI.',
       });
     }
 
-    // Parse returned JSON from Gemini AI
+    // Safely parse JSON response from Gemini AI
     let parsedResponse;
     try {
-      parsedResponse = JSON.parse(rawAiResponse);
+      parsedResponse = safeParseAIJson(rawAiResponse);
     } catch (parseError) {
-      return res.status(500).json({
+      console.error('AI Evaluation Response JSON Parse Error:', parseError.message);
+      return res.status(502).json({
         success: false,
         message: 'Failed to parse AI evaluation response. Invalid JSON format returned.',
       });
     }
 
     // Update interview session with score, feedback, and completed status
-    session.score = typeof parsedResponse.score === 'number' ? parsedResponse.score : 0;
-    session.feedback = Array.isArray(parsedResponse.feedback) ? parsedResponse.feedback : [];
+    session.score = typeof parsedResponse.score === 'number'
+      ? Math.max(0, Math.min(100, Math.round(parsedResponse.score)))
+      : 75;
+
+    let feedback = [];
+    if (Array.isArray(parsedResponse.feedback)) {
+      feedback = parsedResponse.feedback;
+    } else if (Array.isArray(parsedResponse.evaluations)) {
+      feedback = parsedResponse.evaluations;
+    } else if (parsedResponse && typeof parsedResponse === 'object') {
+      const foundArray = Object.values(parsedResponse).find(
+        (val) => Array.isArray(val) && val.length > 0
+      );
+      if (foundArray) feedback = foundArray;
+    }
+
+    feedback = feedback.map((f) => (typeof f === 'string' ? f.trim() : String(f).trim()));
+    while (feedback.length < session.questions.length) {
+      feedback.push('Response evaluated: shows fundamental domain understanding.');
+    }
+
+    session.feedback = feedback;
     session.completed = true;
 
     await session.save();

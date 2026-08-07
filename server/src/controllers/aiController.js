@@ -3,6 +3,7 @@ const ResumeAnalysis = require('../models/ResumeAnalysis');
 const Notification = require('../models/Notification');
 const { extractTextFromPDF } = require('../services/ai/pdfExtractionService');
 const { analyzeResumeWithGemini } = require('../services/ai/geminiService');
+const { safeParseAIJson } = require('../utils/jsonUtils');
 
 // @desc    Get user's latest resume analysis
 // @route   GET /api/ai/resume-analysis
@@ -71,10 +72,10 @@ exports.analyzeResume = async (req, res, next) => {
     // 6. Parse Gemini JSON response
     let parsedAnalysis;
     try {
-      parsedAnalysis = JSON.parse(geminiRawResponse);
+      parsedAnalysis = safeParseAIJson(geminiRawResponse);
     } catch (parseError) {
-      console.error('JSON Parse Error:', parseError.message, 'Raw Response:', geminiRawResponse);
-      return res.status(500).json({
+      console.error('JSON Parse Error:', parseError.message);
+      return res.status(502).json({
         success: false,
         message: 'Failed to parse AI response',
       });

@@ -1,6 +1,7 @@
 const Roadmap = require('../models/Roadmap');
 const Notification = require('../models/Notification');
 const { generateRoadmapWithGemini } = require('../services/ai/geminiService');
+const { safeParseAIJson } = require('../utils/jsonUtils');
 
 /**
  * @desc    Get user's saved placement roadmap
@@ -66,12 +67,10 @@ exports.generateRoadmap = async (req, res, next) => {
     // Parse returned JSON from Gemini AI
     let parsedResponse;
     try {
-      console.log('================ RAW GEMINI ROADMAP RESPONSE ================');
-      console.log(rawAiResponse);
-      console.log('=============================================================');
-      parsedResponse = JSON.parse(rawAiResponse);
+      parsedResponse = safeParseAIJson(rawAiResponse);
     } catch (parseError) {
-      return res.status(500).json({
+      console.error('Roadmap JSON Parse Error:', parseError.message);
+      return res.status(502).json({
         success: false,
         message: 'Failed to parse AI response. Invalid JSON format returned.',
       });
