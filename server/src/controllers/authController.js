@@ -99,6 +99,11 @@ exports.loginUser = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        college: user.college || '',
+        branch: user.branch || '',
+        graduationYear: user.graduationYear || '',
+        targetRole: user.targetRole || '',
+        targetCompany: user.targetCompany || '',
         profilePicture: user.profilePicture,
         resume: user.resume,
       },
@@ -129,6 +134,11 @@ exports.getUserProfile = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        college: user.college || '',
+        branch: user.branch || '',
+        graduationYear: user.graduationYear || '',
+        targetRole: user.targetRole || '',
+        targetCompany: user.targetCompany || '',
         profilePicture: user.profilePicture,
         resume: user.resume,
         createdAt: user.createdAt,
@@ -149,13 +159,21 @@ exports.getUserProfile = async (req, res, next) => {
 // @access  Private
 exports.updateUserProfile = async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, college, branch, graduationYear, targetRole, targetCompany } = req.body;
     
-    // Check if neither file nor name is provided
-    if (!req.file && req.body.name === undefined) {
+    // Check if neither file nor profile details are provided
+    if (
+      !req.file &&
+      name === undefined &&
+      college === undefined &&
+      branch === undefined &&
+      graduationYear === undefined &&
+      targetRole === undefined &&
+      targetCompany === undefined
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide a name or a profile picture to update',
+        message: 'Please provide profile details or a profile picture to update',
       });
     }
 
@@ -177,7 +195,12 @@ exports.updateUserProfile = async (req, res, next) => {
     }
 
     const updateFields = {};
-    if (name) updateFields.name = name;
+    if (name !== undefined) updateFields.name = name.trim();
+    if (college !== undefined) updateFields.college = college.trim();
+    if (branch !== undefined) updateFields.branch = branch.trim();
+    if (graduationYear !== undefined) updateFields.graduationYear = graduationYear.trim();
+    if (targetRole !== undefined) updateFields.targetRole = targetRole.trim();
+    if (targetCompany !== undefined) updateFields.targetCompany = targetCompany.trim();
 
     // Handle new profile picture
     if (req.file) {
@@ -204,12 +227,17 @@ exports.updateUserProfile = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Profile picture updated successfully',
+      message: 'Profile updated successfully',
       user: {
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
+        college: updatedUser.college || '',
+        branch: updatedUser.branch || '',
+        graduationYear: updatedUser.graduationYear || '',
+        targetRole: updatedUser.targetRole || '',
+        targetCompany: updatedUser.targetCompany || '',
         profilePicture: updatedUser.profilePicture,
         resume: updatedUser.resume,
         createdAt: updatedUser.createdAt,
@@ -220,7 +248,7 @@ exports.updateUserProfile = async (req, res, next) => {
     console.error('Error updating user profile:', error);
     return res.status(500).json({
       success: false,
-      message: 'Upload failure',
+      message: 'Failed to update profile',
     });
   }
 };
@@ -245,23 +273,40 @@ exports.uploadResume = async (req, res, next) => {
       });
     }
 
+    const cloudinary = require('../config/cloudinary');
+
     // Delete old resume from Cloudinary if it exists
     if (user.resumePublicId) {
-      const cloudinary = require('../config/cloudinary');
       try {
-        await cloudinary.uploader.destroy(user.resumePublicId);
+        await cloudinary.uploader.destroy(user.resumePublicId, { resource_type: 'raw' });
       } catch (cloudinaryError) {
         console.error('Error deleting old resume:', cloudinaryError);
       }
     }
+
+    // Stream buffer to Cloudinary using upload_stream
+    const stream = require('stream');
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'ai_interview_coach_resumes',
+          resource_type: 'raw',
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+      stream.Readable.from(req.file.buffer).pipe(uploadStream);
+    });
 
     // Update user with new resume URL and public_id
     const updatedUser = await User.findByIdAndUpdate(
       req.user.userId,
       {
         $set: {
-          resume: req.file.path, // Cloudinary secure_url
-          resumePublicId: req.file.filename, // Cloudinary public_id
+          resume: result.secure_url,
+          resumePublicId: result.public_id,
         },
       },
       { new: true, runValidators: true }

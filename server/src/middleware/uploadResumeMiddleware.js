@@ -1,15 +1,7 @@
 const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('../config/cloudinary');
 
-// Configure Multer Storage for Cloudinary
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'ai_interview_coach_resumes',
-    allowed_formats: ['pdf'], // Allow PDF only
-  },
-});
+// Configure Multer Memory Storage
+const storage = multer.memoryStorage();
 
 // Configure Multer
 const upload = multer({
