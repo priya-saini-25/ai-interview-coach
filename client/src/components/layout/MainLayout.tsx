@@ -7,7 +7,7 @@ export const MainLayout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-[#0b0f19] text-slate-900 dark:text-gray-100 transition-colors duration-200">
+    <div className="flex min-h-screen bg-[#0b0f19] text-gray-100">
       <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Header onToggleMobileMenu={() => setIsMobileMenuOpen((prev) => !prev)} />

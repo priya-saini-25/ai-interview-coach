@@ -51,14 +51,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">AI Placement</h1>
-              <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold uppercase tracking-widest">Coach Platform</p>
+              <h1 className="text-lg font-bold text-white tracking-tight">AI Placement</h1>
+              <p className="text-[10px] text-indigo-400 font-semibold uppercase tracking-widest">Coach Platform</p>
             </div>
           </div>
           {onClose && (
             <button
               onClick={onClose}
-              className="md:hidden p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="md:hidden p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"
               aria-label="Close menu"
             >
               <X className="w-5 h-5" />
@@ -78,8 +78,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? 'bg-indigo-50 dark:bg-indigo-600/15 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/60'
+                      ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30 shadow-sm'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800/60'
                   }`
                 }
               >
@@ -92,10 +92,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
       </div>
 
       {/* Logout Button */}
-      <div className="pt-4 border-t border-gray-200 dark:border-gray-800/80">
+      <div className="pt-4 border-t border-gray-800/80">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-200"
+          className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
         >
           <LogOut className="w-5 h-5" />
           <span>Logout</span>
@@ -107,7 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
   return (
     <>
       {/* Desktop Fixed Sidebar */}
-      <aside className="hidden md:flex w-64 bg-white dark:bg-[#0f172a]/95 border-r border-gray-200 dark:border-gray-800 min-h-screen sticky top-0 h-screen z-30 flex-col">
+      <aside className="hidden md:flex w-64 bg-[#0f172a]/95 border-r border-gray-800/80 min-h-screen sticky top-0 h-screen z-30 flex-col">
         {sidebarContent}
       </aside>
 
@@ -121,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
 
       {/* Mobile Slide-Over Drawer */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 w-72 bg-white dark:bg-[#0f172a] border-r border-gray-200 dark:border-gray-800 z-50 md:hidden transition-transform duration-300 ease-in-out shadow-2xl ${
+        className={`fixed top-0 left-0 bottom-0 w-72 bg-[#0f172a] border-r border-gray-800 z-50 md:hidden transition-transform duration-300 ease-in-out shadow-2xl ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

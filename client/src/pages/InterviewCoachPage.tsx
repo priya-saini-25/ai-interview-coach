@@ -188,14 +188,14 @@ export const InterviewCoachPage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header Banner */}
-      <div className="glass-panel p-6 md:p-8 rounded-2xl border border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+      <div className="glass-panel p-6 md:p-8 rounded-2xl border border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div>
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-pink-500/10 text-pink-700 dark:text-pink-400 text-xs font-semibold mb-3 border border-pink-500/20">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-pink-500/10 text-pink-400 text-xs font-semibold mb-3 border border-pink-500/20">
             <Video className="w-3.5 h-3.5" />
             <span>Realistic AI Mock Examiner</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">AI Mock Interview Coach</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 max-w-xl">
+          <h1 className="text-2xl font-bold text-white">AI Mock Interview Coach</h1>
+          <p className="text-sm text-gray-400 mt-1 max-w-xl">
             Complete a realistic 15-question structured interview across 4 distinct rounds with optional camera mode.
           </p>
         </div>
@@ -203,23 +203,23 @@ export const InterviewCoachPage: React.FC = () => {
 
       {/* Evaluation Results Summary Dashboard */}
       {evaluationResult && (
-        <Card className="border-emerald-500/40 bg-gradient-to-r from-emerald-50 via-slate-50 to-white dark:from-emerald-950/30 dark:via-gray-900 dark:to-[#0b0f19]">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 border-b border-gray-200 dark:border-gray-800 pb-6">
+        <Card className="border-emerald-500/40 bg-gradient-to-r from-emerald-950/30 via-gray-900 to-[#0b0f19]">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 border-b border-gray-800 pb-6">
             <div>
-              <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-500/30">
+              <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/30">
                 Evaluation Complete
               </span>
-              <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white mt-2">Interview Evaluation Dashboard</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-                Overall Readiness: <strong className="text-emerald-700 dark:text-emerald-400">{evaluationResult.detailedAnalysis?.overallReadiness || 'Ready for Technical Rounds'}</strong>
+              <h3 className="text-2xl font-extrabold text-white mt-2">Interview Evaluation Dashboard</h3>
+              <p className="text-xs text-gray-300 mt-1">
+                Overall Readiness: <strong className="text-emerald-400">{evaluationResult.detailedAnalysis?.overallReadiness || 'Ready for Technical Rounds'}</strong>
               </p>
             </div>
 
-            <div className="flex items-center space-x-4 bg-white dark:bg-gray-900 px-6 py-4 rounded-xl border border-emerald-500/40 shadow-sm">
-              <span className="text-5xl font-extrabold text-emerald-600 dark:text-emerald-400">{evaluationResult.score}</span>
+            <div className="flex items-center space-x-4 bg-gray-900 px-6 py-4 rounded-xl border border-emerald-500/40 shadow-sm">
+              <span className="text-5xl font-extrabold text-emerald-400">{evaluationResult.score}</span>
               <div className="text-left">
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase">Overall Score</p>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500">Out of 100 Points</p>
+                <p className="text-xs text-gray-400 font-semibold uppercase">Overall Score</p>
+                <p className="text-[10px] text-gray-500">Out of 100 Points</p>
               </div>
             </div>
           </div>
@@ -227,21 +227,21 @@ export const InterviewCoachPage: React.FC = () => {
           {/* Section Score Breakdown Grid */}
           {evaluationResult.sectionScores && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="p-4 rounded-xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 shadow-sm">
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase">Technical</p>
-                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-1">{evaluationResult.sectionScores.technical} / 100</p>
+              <div className="p-4 rounded-xl bg-gray-900/80 border border-gray-800 shadow-sm">
+                <p className="text-xs text-gray-400 font-semibold uppercase">Technical</p>
+                <p className="text-2xl font-bold text-indigo-400 mt-1">{evaluationResult.sectionScores.technical} / 100</p>
               </div>
-              <div className="p-4 rounded-xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 shadow-sm">
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase">Logical</p>
-                <p className="text-2xl font-bold text-sky-600 dark:text-sky-400 mt-1">{evaluationResult.sectionScores.logical} / 100</p>
+              <div className="p-4 rounded-xl bg-gray-900/80 border border-gray-800 shadow-sm">
+                <p className="text-xs text-gray-400 font-semibold uppercase">Logical</p>
+                <p className="text-2xl font-bold text-sky-400 mt-1">{evaluationResult.sectionScores.logical} / 100</p>
               </div>
-              <div className="p-4 rounded-xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 shadow-sm">
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase">Personal</p>
-                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{evaluationResult.sectionScores.personal} / 100</p>
+              <div className="p-4 rounded-xl bg-gray-900/80 border border-gray-800 shadow-sm">
+                <p className="text-xs text-gray-400 font-semibold uppercase">Personal</p>
+                <p className="text-2xl font-bold text-purple-400 mt-1">{evaluationResult.sectionScores.personal} / 100</p>
               </div>
-              <div className="p-4 rounded-xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 shadow-sm">
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase">HR / Behavioral</p>
-                <p className="text-2xl font-bold text-pink-600 dark:text-pink-400 mt-1">{evaluationResult.sectionScores.hr} / 100</p>
+              <div className="p-4 rounded-xl bg-gray-900/80 border border-gray-800 shadow-sm">
+                <p className="text-xs text-gray-400 font-semibold uppercase">HR / Behavioral</p>
+                <p className="text-2xl font-bold text-pink-400 mt-1">{evaluationResult.sectionScores.hr} / 100</p>
               </div>
             </div>
           )}
@@ -249,28 +249,28 @@ export const InterviewCoachPage: React.FC = () => {
           {/* Strengths & Weaknesses Grid */}
           {evaluationResult.detailedAnalysis && (
             <div className="grid md:grid-cols-2 gap-6 mb-8">
-              <div className="p-5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/20 border border-emerald-500/30">
-                <h4 className="text-sm font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider mb-3">
+              <div className="p-5 rounded-xl bg-emerald-950/20 border border-emerald-500/30">
+                <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-3">
                   Key Strengths
                 </h4>
-                <ul className="space-y-2 text-xs text-gray-700 dark:text-gray-300">
+                <ul className="space-y-2 text-xs text-gray-300">
                   {evaluationResult.detailedAnalysis.strengths.map((str, i) => (
                     <li key={i} className="flex items-start space-x-2">
-                      <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+                      <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
                       <span>{str}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="p-5 rounded-xl bg-rose-50/80 dark:bg-rose-950/20 border border-rose-500/30">
-                <h4 className="text-sm font-bold text-rose-800 dark:text-rose-400 uppercase tracking-wider mb-3">
+              <div className="p-5 rounded-xl bg-rose-950/20 border border-rose-500/30">
+                <h4 className="text-sm font-bold text-rose-400 uppercase tracking-wider mb-3">
                   Areas for Improvement
                 </h4>
-                <ul className="space-y-2 text-xs text-gray-700 dark:text-gray-300">
+                <ul className="space-y-2 text-xs text-gray-300">
                   {evaluationResult.detailedAnalysis.weaknesses.map((wk, i) => (
                     <li key={i} className="flex items-start space-x-2">
-                      <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 mt-0.5 shrink-0" />
+                      <AlertCircle className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />
                       <span>{wk}</span>
                     </li>
                   ))}
@@ -281,12 +281,12 @@ export const InterviewCoachPage: React.FC = () => {
 
           {/* Detailed Question Feedback */}
           <div className="space-y-4 mb-6">
-            <h4 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider">
               Per-Question Feedback ({evaluationResult.feedback.length} Questions)
             </h4>
             {evaluationResult.feedback.map((fb, idx) => (
-              <div key={idx} className="p-4 rounded-xl bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 text-xs text-gray-700 dark:text-gray-300 shadow-sm">
-                <span className="font-bold text-indigo-600 dark:text-indigo-400 mr-2">Q{idx + 1} Feedback:</span>
+              <div key={idx} className="p-4 rounded-xl bg-gray-900/80 border border-gray-800 text-xs text-gray-300 shadow-sm">
+                <span className="font-bold text-indigo-400 mr-2">Q{idx + 1} Feedback:</span>
                 <span>{fb}</span>
               </div>
             ))}
@@ -318,8 +318,8 @@ export const InterviewCoachPage: React.FC = () => {
             <div className="lg:col-span-1">
               <Card className="p-4 border-pink-500/30 flex flex-col justify-between min-h-[220px]">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-2 text-xs font-semibold text-gray-900 dark:text-white">
-                    <Camera className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+                  <div className="flex items-center space-x-2 text-xs font-semibold text-white">
+                    <Camera className="w-4 h-4 text-pink-400" />
                     <span>Camera Preview</span>
                   </div>
                   <Badge variant={isCameraActive ? 'success' : 'gray'}>
@@ -327,11 +327,11 @@ export const InterviewCoachPage: React.FC = () => {
                   </Badge>
                 </div>
 
-                <div className="relative aspect-video bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-800">
+                <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center border border-gray-800">
                   {isCameraActive ? (
                     <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
                   ) : (
-                    <div className="text-center p-4 text-gray-500 dark:text-gray-400">
+                    <div className="text-center p-4 text-gray-400">
                       <VideoOff className="w-8 h-8 mx-auto mb-2" />
                       <p className="text-xs">Camera preview off (Local-only mode)</p>
                     </div>
@@ -339,7 +339,7 @@ export const InterviewCoachPage: React.FC = () => {
                 </div>
 
                 {cameraError && (
-                  <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-2">{cameraError}</p>
+                  <p className="text-[10px] text-amber-400 mt-2">{cameraError}</p>
                 )}
 
                 <div className="mt-3 flex items-center justify-between gap-2">
@@ -361,15 +361,15 @@ export const InterviewCoachPage: React.FC = () => {
               <Card className="p-6 h-full flex flex-col justify-between border-indigo-500/30">
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
+                    <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
                       Section {currentSectionIndex + 1} of {sectionsList.length}
                     </span>
                     <Badge variant="purple">{role} ({difficulty})</Badge>
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-bold text-white">
                     {currentSection.title} Round
                   </h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-gray-400 mt-1">
                     {currentSection.desc} ({sectionQuestions.length} Questions)
                   </p>
                 </div>
@@ -383,7 +383,7 @@ export const InterviewCoachPage: React.FC = () => {
                       className={`p-2.5 rounded-lg text-xs font-semibold text-center transition border ${
                         currentSectionIndex === idx
                           ? 'bg-indigo-600 text-white border-indigo-500 shadow-md'
-                          : 'bg-gray-100 dark:bg-gray-900/60 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-800'
+                          : 'bg-gray-900/60 text-gray-400 border-gray-800 hover:text-white hover:bg-gray-800'
                       }`}
                     >
                       <span className="block truncate">{sec.title}</span>
@@ -396,11 +396,11 @@ export const InterviewCoachPage: React.FC = () => {
 
           {/* Current Section Questions Form */}
           <Card className="border-pink-500/30">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-800">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
+              <h3 className="text-base font-bold text-white">
                 {currentSection.title} Questions ({sectionQuestions.length} Items)
               </h3>
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+              <span className="text-xs text-gray-400 font-medium">
                 Step {currentSectionIndex + 1} of {sectionsList.length}
               </span>
             </div>
@@ -409,9 +409,9 @@ export const InterviewCoachPage: React.FC = () => {
               {sectionQuestions.map((item, qSubIdx) => {
                 const globalIndex = item.originalIdx;
                 return (
-                  <div key={globalIndex} className="p-5 rounded-xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-800 space-y-3">
+                  <div key={globalIndex} className="p-5 rounded-xl bg-gray-900/60 border border-gray-800 space-y-3">
                     <div className="flex items-start justify-between gap-4">
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+                      <h4 className="text-sm font-bold text-white">
                         Q{globalIndex + 1}: {item.question}
                       </h4>
                       <Badge variant="purple" size="sm">{item.section}</Badge>
@@ -421,7 +421,7 @@ export const InterviewCoachPage: React.FC = () => {
                       value={answers[globalIndex] || ''}
                       onChange={(e) => handleAnswerChange(globalIndex, e.target.value)}
                       placeholder="Type your structured answer here..."
-                      className="w-full bg-white dark:bg-[#111827] text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border border-gray-300 dark:border-gray-800 rounded-lg p-3 text-xs focus:outline-none focus:border-pink-500 transition"
+                      className="w-full bg-[#111827] text-gray-100 placeholder-gray-500 border border-gray-800 rounded-lg p-3 text-xs focus:outline-none focus:border-pink-500 transition"
                     />
                   </div>
                 );
@@ -429,7 +429,7 @@ export const InterviewCoachPage: React.FC = () => {
             </div>
 
             {/* Previous / Next Section Controls */}
-            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
+            <div className="mt-8 pt-6 border-t border-gray-800 flex items-center justify-between">
               <Button
                 variant="secondary"
                 size="md"
@@ -469,9 +469,9 @@ export const InterviewCoachPage: React.FC = () => {
       {/* Start New Session Form */}
       {!activeSession && !evaluationResult && (
         <Card className="max-w-xl mx-auto border-pink-500/30">
-          <div className="flex items-center space-x-3 mb-4 pb-3 border-b border-gray-200 dark:border-gray-800">
-            <Sparkles className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Start 15-Question AI Mock Interview</h3>
+          <div className="flex items-center space-x-3 mb-4 pb-3 border-b border-gray-800">
+            <Sparkles className="w-5 h-5 text-pink-400" />
+            <h3 className="text-lg font-bold text-white">Start 15-Question AI Mock Interview</h3>
           </div>
 
           <form onSubmit={handleStartInterview} className="space-y-4">
@@ -491,13 +491,13 @@ export const InterviewCoachPage: React.FC = () => {
             />
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-medium text-gray-300 mb-1.5 uppercase tracking-wider">
                 Difficulty Level
               </label>
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value as any)}
-                className="w-full bg-white dark:bg-[#111827] text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-800 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500"
+                className="w-full bg-[#111827] text-gray-100 border border-gray-800 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500"
               >
                 <option value="Easy">Easy</option>
                 <option value="Medium">Medium</option>
@@ -506,12 +506,12 @@ export const InterviewCoachPage: React.FC = () => {
             </div>
 
             {/* Optional Camera Toggle */}
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-800 flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-gray-900/60 border border-gray-800 flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <Camera className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+                <Camera className="w-5 h-5 text-pink-400" />
                 <div>
-                  <p className="text-xs font-semibold text-gray-900 dark:text-white">Camera Mode (Optional)</p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400">Live preview only. No video uploaded or stored.</p>
+                  <p className="text-xs font-semibold text-white">Camera Mode (Optional)</p>
+                  <p className="text-[10px] text-gray-400">Live preview only. No video uploaded or stored.</p>
                 </div>
               </div>
               <input
@@ -537,9 +537,9 @@ export const InterviewCoachPage: React.FC = () => {
       )}
 
       {/* History Table */}
-      <Card className="p-0 overflow-hidden border border-gray-200 dark:border-gray-800">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Previous Interview Sessions</h3>
+      <Card className="p-0 overflow-hidden border border-gray-800">
+        <div className="p-6 border-b border-gray-800">
+          <h3 className="text-lg font-bold text-white">Previous Interview Sessions</h3>
         </div>
 
         {isHistoryLoading ? (
@@ -547,14 +547,14 @@ export const InterviewCoachPage: React.FC = () => {
             <Spinner size="md" />
           </div>
         ) : history.length === 0 ? (
-          <div className="p-12 text-center text-gray-500 dark:text-gray-400">
-            <Video className="w-10 h-10 mx-auto text-gray-400 dark:text-gray-600 mb-3" />
+          <div className="p-12 text-center text-gray-400">
+            <Video className="w-10 h-10 mx-auto text-gray-600 mb-3" />
             <p className="text-sm font-semibold">No interview sessions recorded yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-gray-50 dark:bg-gray-900/80 text-gray-600 dark:text-gray-400 font-semibold uppercase border-b border-gray-200 dark:border-gray-800">
+              <thead className="bg-gray-900/80 text-gray-400 font-semibold uppercase border-b border-gray-800">
                 <tr>
                   <th className="px-6 py-3.5">Role & Company</th>
                   <th className="px-6 py-3.5">Difficulty</th>
@@ -563,24 +563,24 @@ export const InterviewCoachPage: React.FC = () => {
                   <th className="px-6 py-3.5">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-800/60 text-gray-800 dark:text-gray-200">
+              <tbody className="divide-y divide-gray-800/60 text-gray-200">
                 {history.map((h) => (
-                  <tr key={h._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
-                    <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                      {h.role} {h.company && <span className="text-gray-500 dark:text-gray-400">({h.company})</span>}
+                  <tr key={h._id} className="hover:bg-gray-800/40 transition">
+                    <td className="px-6 py-4 font-semibold text-white">
+                      {h.role} {h.company && <span className="text-gray-400">({h.company})</span>}
                     </td>
                     <td className="px-6 py-4">
                       <Badge variant={h.difficulty === 'Easy' ? 'success' : h.difficulty === 'Medium' ? 'warning' : 'danger'}>
                         {h.difficulty}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 font-bold text-indigo-600 dark:text-indigo-400">{h.score} / 100</td>
+                    <td className="px-6 py-4 font-bold text-indigo-400">{h.score} / 100</td>
                     <td className="px-6 py-4">
                       <Badge variant={h.completed ? 'success' : 'gray'}>
                         {h.completed ? 'Completed' : 'Pending'}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
+                    <td className="px-6 py-4 text-gray-400">
                       {new Date(h.createdAt).toLocaleDateString()}
                     </td>
                   </tr>

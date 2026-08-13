@@ -1,27 +1,8 @@
 @import "tailwindcss";
 
 @layer base {
-  :root {
-    --bg-main: #0b0f19;
-    --bg-card: #111827;
-    --text-main: #f9fafb;
-    --border-main: rgba(255, 255, 255, 0.08);
-  }
-
-  html.light {
-    --bg-main: #f8fafc;
-    --bg-card: #ffffff;
-    --text-main: #0f172a;
-    --border-main: #e2e8f0;
-  }
-
   body {
-    @apply bg-[#0b0f19] text-gray-100 font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen transition-colors duration-200;
-  }
-
-  html.light body {
-    background-color: #f8fafc !important;
-    color: #0f172a !important;
+    @apply bg-[#0b0f19] text-gray-100 font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen;
   }
 }
 
@@ -35,17 +16,9 @@
   background: #0b0f19;
 }
 
-html.light ::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
 ::-webkit-scrollbar-thumb {
   background: #1f2937;
   border-radius: 4px;
-}
-
-html.light ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -60,21 +33,10 @@ html.light ::-webkit-scrollbar-thumb {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-html.light .glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-}
-
 .glass-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-html.light .glass-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
 }
 
 /* Print/Download Styles */
