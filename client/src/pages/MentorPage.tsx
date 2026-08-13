@@ -33,28 +33,28 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
   const lines = content.split('\n');
 
   return (
-    <div className="space-y-2 text-sm leading-relaxed font-sans text-gray-200 light:text-slate-800">
+    <div className="space-y-2 text-sm leading-relaxed font-sans text-gray-800 dark:text-gray-200">
       {lines.map((line, idx) => {
         const trimmed = line.trim();
         if (!trimmed) return <div key={idx} className="h-1" />;
 
         if (trimmed.startsWith('### ')) {
           return (
-            <h4 key={idx} className="text-sm font-bold text-indigo-300 light:text-indigo-700 mt-3 mb-1">
+            <h4 key={idx} className="text-sm font-bold text-indigo-700 dark:text-indigo-300 mt-3 mb-1">
               {formatInline(trimmed.replace('### ', ''))}
             </h4>
           );
         }
         if (trimmed.startsWith('## ')) {
           return (
-            <h3 key={idx} className="text-base font-bold text-white light:text-slate-900 mt-4 mb-1">
+            <h3 key={idx} className="text-base font-bold text-gray-900 dark:text-white mt-4 mb-1">
               {formatInline(trimmed.replace('## ', ''))}
             </h3>
           );
         }
         if (trimmed.startsWith('# ')) {
           return (
-            <h2 key={idx} className="text-lg font-extrabold text-white light:text-slate-900 mt-4 mb-2">
+            <h2 key={idx} className="text-lg font-extrabold text-gray-900 dark:text-white mt-4 mb-2">
               {formatInline(trimmed.replace('# ', ''))}
             </h2>
           );
@@ -63,7 +63,7 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
         if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
           return (
             <div key={idx} className="flex items-start space-x-2 pl-2">
-              <span className="text-indigo-400 light:text-indigo-600 font-bold">•</span>
+              <span className="text-indigo-600 dark:text-indigo-400 font-bold">•</span>
               <span>{formatInline(trimmed.substring(2))}</span>
             </div>
           );
@@ -72,7 +72,7 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
         if (/^\d+\.\s/.test(trimmed)) {
           const contentText = trimmed.replace(/^\d+\.\s/, '');
           return (
-            <li key={idx} className="ml-4 list-decimal text-gray-300">
+            <li key={idx} className="ml-4 list-decimal text-gray-700 dark:text-gray-300">
               {formatInline(contentText)}
             </li>
           );
@@ -205,17 +205,17 @@ export const MentorPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto flex flex-col h-[calc(100vh-6rem)]">
       {/* Header Panel */}
-      <div className="glass-panel p-5 rounded-2xl border border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
+      <div className="glass-panel p-5 rounded-2xl border border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
         <div>
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-semibold mb-2 border border-indigo-500/20">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 text-xs font-semibold mb-2 border border-indigo-500/20">
             <Sparkles className="w-3.5 h-3.5" />
             <span>AI Placement Intelligence</span>
           </div>
-          <h1 className="text-xl font-bold text-white flex items-center space-x-2">
-            <Bot className="w-6 h-6 text-indigo-400" />
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+            <Bot className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
             <span>AI Placement Mentor</span>
           </h1>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
             Your personal engineering mentor tailored to your profile, DSA progress, ATS score, and mock interviews.
           </p>
         </div>
@@ -242,8 +242,8 @@ export const MentorPage: React.FC = () => {
               size="sm"
               onClick={() => clearHistoryMutation.mutate()}
               isLoading={clearHistoryMutation.isPending}
-              leftIcon={<Trash2 className="w-3.5 h-3.5 text-red-400" />}
-              className="text-red-400 hover:text-red-300 hover:bg-red-500/10 text-xs"
+              leftIcon={<Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />}
+              className="text-red-600 dark:text-red-400 hover:bg-red-500/10 text-xs"
             >
               Clear Chat
             </Button>
@@ -252,33 +252,33 @@ export const MentorPage: React.FC = () => {
       </div>
 
       {/* Main Chat Container */}
-      <Card className="flex-1 p-0 overflow-hidden flex flex-col border-gray-800 bg-[#0b0f19]/90">
+      <Card className="flex-1 p-0 overflow-hidden flex flex-col border border-gray-200 dark:border-gray-800 bg-white/90 dark:bg-[#0b0f19]/90 shadow-sm">
         {/* Messages Feed */}
         <div className="flex-1 p-6 overflow-y-auto space-y-6">
           {isHistoryLoading ? (
-            <div className="flex flex-col items-center justify-center h-full space-y-3 text-gray-400">
+            <div className="flex flex-col items-center justify-center h-full space-y-3 text-gray-500 dark:text-gray-400">
               <Spinner size="lg" />
               <p className="text-xs font-semibold">Connecting to your AI Mentor...</p>
             </div>
           ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[40vh] text-center space-y-4 max-w-lg mx-auto py-8">
-              <div className="p-4 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 shadow-xl shadow-indigo-500/10">
+              <div className="p-4 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 shadow-xl shadow-indigo-500/10">
                 <Bot className="w-12 h-12" />
               </div>
-              <h3 className="text-lg font-bold text-white">Hi! I’m your AI Placement Mentor</h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Hi! I’m your AI Placement Mentor</h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                 I have full context of your resume analysis, DSA progress, mock interview scores, and targeted placement goals. Ask me anything to jumpstart your preparation!
               </p>
 
               {/* Quick Prompt Chips */}
               <div className="w-full pt-4 space-y-2">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Suggested Questions</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Suggested Questions</p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {suggestedPrompts.map((promptText, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleSend(promptText)}
-                      className="text-xs px-3.5 py-2 rounded-xl bg-gray-900/80 hover:bg-indigo-950/80 text-gray-300 hover:text-indigo-200 border border-gray-800 hover:border-indigo-500/30 transition text-left"
+                      className="text-xs px-3.5 py-2 rounded-xl bg-gray-100 dark:bg-gray-900/80 hover:bg-indigo-50 dark:hover:bg-indigo-950/80 text-gray-700 dark:text-gray-300 hover:text-indigo-700 dark:hover:text-indigo-200 border border-gray-200 dark:border-gray-800 hover:border-indigo-500/30 transition text-left"
                     >
                       💡 {promptText}
                     </button>
@@ -311,7 +311,7 @@ export const MentorPage: React.FC = () => {
                       className={`max-w-2xl p-4 rounded-2xl ${
                         isUser
                           ? 'bg-indigo-600 text-white rounded-tr-none shadow-lg shadow-indigo-600/20'
-                          : 'glass-panel bg-gray-900/90 border border-gray-800 text-gray-100 rounded-tl-none shadow-xl'
+                          : 'glass-panel bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-100 rounded-tl-none shadow-md'
                       }`}
                     >
                       {isUser ? (
@@ -330,9 +330,9 @@ export const MentorPage: React.FC = () => {
                   <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shrink-0 shadow-md">
                     <Bot className="w-4 h-4" />
                   </div>
-                  <div className="glass-panel p-4 rounded-2xl rounded-tl-none border border-gray-800 bg-gray-900/90 flex items-center space-x-3">
+                  <div className="glass-panel p-4 rounded-2xl rounded-tl-none border border-gray-200 dark:border-gray-800 bg-white/90 dark:bg-gray-900/90 flex items-center space-x-3">
                     <Spinner size="sm" />
-                    <span className="text-xs font-semibold text-gray-400">AI Mentor is analyzing your placement context...</span>
+                    <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">AI Mentor is analyzing your placement context...</span>
                   </div>
                 </div>
               )}
@@ -343,15 +343,15 @@ export const MentorPage: React.FC = () => {
         </div>
 
         {/* Input Bar */}
-        <div className="p-4 border-t border-gray-800 bg-gray-950/80 backdrop-blur-md">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50/90 dark:bg-gray-950/80 backdrop-blur-md">
           {messages.length > 0 && (
             <div className="flex items-center space-x-2 overflow-x-auto pb-2 mb-2 no-scrollbar">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 shrink-0">Quick Prompts:</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 shrink-0">Quick Prompts:</span>
               {suggestedPrompts.slice(0, 3).map((promptText, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleSend(promptText)}
-                  className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 hover:text-gray-200 border border-gray-800 transition"
+                  className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-800 transition"
                 >
                   {promptText}
                 </button>
@@ -367,7 +367,7 @@ export const MentorPage: React.FC = () => {
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={handleKeyPress}
               disabled={sendMutation.isPending}
-              className="flex-1 bg-[#111827] text-white border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition placeholder-gray-500 disabled:opacity-50"
+              className="flex-1 bg-white dark:bg-[#111827] text-gray-900 dark:text-white border border-gray-300 dark:border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition placeholder-gray-400 dark:placeholder-gray-500 disabled:opacity-50"
             />
             <Button
               variant="primary"

@@ -110,23 +110,23 @@ export const RoadmapPage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header Banner */}
-      <div className="glass-panel p-6 md:p-8 rounded-2xl border border-gray-800 light:border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 no-print">
+      <div className="glass-panel p-6 md:p-8 rounded-2xl border border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 no-print">
         <div>
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 light:text-purple-600 text-xs font-semibold mb-3 border border-purple-500/20">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-400 text-xs font-semibold mb-3 border border-purple-500/20">
             <Compass className="w-3.5 h-3.5" />
             <span>AI Career Strategist</span>
           </div>
-          <h1 className="text-2xl font-bold text-white light:text-slate-900">6-Month AI Placement Roadmap</h1>
-          <p className="text-sm text-gray-400 light:text-slate-600 mt-1 max-w-xl">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">6-Month AI Placement Roadmap</h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 max-w-xl">
             Get a comprehensive month-by-month, week-by-week prep strategy tailored to your dream role, company, and package.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 bg-gray-900/80 light:bg-slate-100 p-1.5 rounded-xl border border-gray-800 light:border-slate-300">
+        <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-900/80 p-1.5 rounded-xl border border-gray-300 dark:border-gray-800">
           <button
             onClick={() => setActiveTab('view')}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition ${
-              activeTab === 'view' ? 'bg-purple-600 text-white shadow' : 'text-gray-400 light:text-slate-600 hover:text-white light:hover:text-slate-900'
+              activeTab === 'view' ? 'bg-purple-600 text-white shadow' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             View Roadmap
@@ -134,7 +134,7 @@ export const RoadmapPage: React.FC = () => {
           <button
             onClick={() => setActiveTab('generate')}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition ${
-              activeTab === 'generate' ? 'bg-purple-600 text-white shadow' : 'text-gray-400 light:text-slate-600 hover:text-white light:hover:text-slate-900'
+              activeTab === 'generate' ? 'bg-purple-600 text-white shadow' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             Generate New
@@ -145,9 +145,9 @@ export const RoadmapPage: React.FC = () => {
       {/* Form Tab */}
       {(activeTab === 'generate' || !hasRoadmap) && (
         <Card className="max-w-3xl mx-auto border-purple-500/30 no-print">
-          <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-800 light:border-slate-200">
-            <Sparkles className="w-5 h-5 text-purple-400 light:text-purple-600" />
-            <h3 className="text-lg font-bold text-white light:text-slate-900">Configure Target Profile</h3>
+          <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-200 dark:border-gray-800">
+            <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Configure Target Profile</h3>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -211,9 +211,9 @@ export const RoadmapPage: React.FC = () => {
       {activeTab === 'view' && hasRoadmap && !generateMutation.isPending && (
         <div className="space-y-6">
           {/* Action Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl glass-panel border border-gray-800 light:border-slate-200 no-print">
-            <div className="flex items-center space-x-2 text-xs text-purple-400 light:text-purple-600 font-semibold">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl glass-panel border border-gray-200 dark:border-gray-800 no-print">
+            <div className="flex items-center space-x-2 text-xs text-purple-700 dark:text-purple-400 font-semibold">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>Saved for authenticated user</span>
             </div>
 
@@ -223,7 +223,7 @@ export const RoadmapPage: React.FC = () => {
                 size="sm"
                 onClick={handleSaveRoadmap}
                 isLoading={saveMutation.isPending}
-                leftIcon={<Save className="w-4 h-4 text-indigo-400" />}
+                leftIcon={<Save className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
               >
                 Save Roadmap
               </Button>
@@ -240,12 +240,12 @@ export const RoadmapPage: React.FC = () => {
           </div>
 
           {/* Printable Document View */}
-          <Card className="prose prose-invert max-w-none p-6 sm:p-8 leading-relaxed light:prose-slate">
-            <div className="border-b border-gray-800 light:border-slate-200 pb-6 mb-6">
-              <h2 className="text-xl font-bold text-purple-400 light:text-purple-700 m-0">
+          <Card className="prose dark:prose-invert max-w-none p-6 sm:p-8 leading-relaxed text-gray-800 dark:text-gray-200">
+            <div className="border-b border-gray-200 dark:border-gray-800 pb-6 mb-6">
+              <h2 className="text-xl font-bold text-purple-700 dark:text-purple-400 m-0">
                 {roadmapData?.targetRole || 'Software Engineer'} AI Placement Roadmap
               </h2>
-              <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-400 light:text-slate-600 font-medium">
+              <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-600 dark:text-gray-400 font-medium">
                 {roadmapData?.targetCompany && <span>Target Company: <strong>{roadmapData.targetCompany}</strong></span>}
                 {roadmapData?.currentYear && <span>Year/Level: <strong>{roadmapData.currentYear}</strong></span>}
                 {roadmapData?.targetPackage && <span>Target CTC: <strong>{roadmapData.targetPackage}</strong></span>}
@@ -253,7 +253,7 @@ export const RoadmapPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="text-gray-200 light:text-slate-800">
+            <div className="text-gray-800 dark:text-gray-200">
               <ReactMarkdown>{roadmapMarkdown}</ReactMarkdown>
             </div>
           </Card>

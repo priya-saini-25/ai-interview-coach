@@ -20,14 +20,14 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b0f19] disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-[#0b0f19] disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variantClasses = {
     primary: 'bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white shadow-lg shadow-indigo-500/25 focus:ring-indigo-500',
-    secondary: 'bg-gray-800 light:bg-slate-200 hover:bg-gray-700 light:hover:bg-slate-300 text-gray-100 light:text-slate-800 border border-gray-700 light:border-slate-300 focus:ring-gray-600',
-    outline: 'border border-indigo-500/50 text-indigo-400 light:text-indigo-600 hover:bg-indigo-500/10 focus:ring-indigo-500',
+    secondary: 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:ring-gray-400 dark:focus:ring-gray-600',
+    outline: 'border border-indigo-500/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 focus:ring-indigo-500',
     danger: 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/20 focus:ring-red-500',
-    ghost: 'text-gray-400 light:text-slate-600 hover:text-white light:hover:text-slate-900 hover:bg-gray-800/50 light:hover:bg-slate-100 focus:ring-gray-600',
+    ghost: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 focus:ring-gray-400 dark:focus:ring-gray-600',
   };
 
   const sizeClasses = {

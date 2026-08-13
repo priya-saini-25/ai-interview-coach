@@ -101,10 +101,10 @@ export const ProfilePage: React.FC = () => {
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
       {/* Header Banner */}
-      <div className="glass-panel p-6 rounded-2xl border border-gray-800 light:border-slate-200 flex items-center justify-between">
+      <div className="glass-panel p-6 rounded-2xl border border-gray-200 dark:border-gray-800 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white light:text-slate-900">My Profile Settings</h1>
-          <p className="text-xs text-gray-400 light:text-slate-600 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Profile Settings</h1>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
             {isEditing ? 'Editing account information and target career preferences.' : 'View your read-only profile information below.'}
           </p>
         </div>
@@ -151,7 +151,7 @@ export const ProfilePage: React.FC = () => {
                 </label>
               )}
             </div>
-            <p className="text-xs text-gray-400 light:text-slate-500 mt-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
               {isEditing ? 'Click camera icon to change profile picture' : 'Profile Avatar Picture'}
             </p>
           </div>
@@ -231,12 +231,12 @@ export const ProfilePage: React.FC = () => {
           />
 
           {/* Current Resume Status */}
-          <div className="p-4 rounded-xl bg-gray-900/60 light:bg-slate-50 border border-gray-800 light:border-slate-200 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-800 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <FileText className="w-5 h-5 text-indigo-400 light:text-indigo-600" />
+              <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               <div>
-                <p className="text-xs font-semibold text-white light:text-slate-900">Uploaded PDF Resume</p>
-                <p className="text-[10px] text-gray-400 light:text-slate-500">
+                <p className="text-xs font-semibold text-gray-900 dark:text-white">Uploaded PDF Resume</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400">
                   {user?.resume ? 'Resume uploaded & ready for AI auditing' : 'No resume uploaded yet'}
                 </p>
               </div>
@@ -246,7 +246,7 @@ export const ProfilePage: React.FC = () => {
                 href={user.resume}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs font-semibold text-indigo-400 light:text-indigo-600 hover:underline"
+                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
               >
                 View PDF
               </a>
@@ -255,7 +255,7 @@ export const ProfilePage: React.FC = () => {
 
           {/* Action Buttons in Edit Mode */}
           {isEditing && (
-            <div className="flex items-center space-x-4 pt-4 border-t border-gray-800 light:border-slate-200">
+            <div className="flex items-center space-x-4 pt-4 border-t border-gray-200 dark:border-gray-800">
               <Button
                 type="button"
                 variant="secondary"
