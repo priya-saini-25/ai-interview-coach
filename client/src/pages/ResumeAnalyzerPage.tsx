@@ -150,7 +150,7 @@ export const ResumeAnalyzerPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="flex items-center space-x-3 bg-gray-900/80 px-6 py-4 rounded-xl border border-indigo-500/30">
+              <div className="flex items-center space-x-3 bg-gray-900/80 px-6 py-4 rounded-xl border border-indigo-500/30 shadow-sm">
                 <span className="text-4xl font-extrabold text-indigo-400">{analysis.overallScore}</span>
                 <span className="text-xs text-gray-400 font-semibold uppercase">/ 100 ATS</span>
               </div>
@@ -168,7 +168,7 @@ export const ResumeAnalyzerPage: React.FC = () => {
               <ul className="space-y-2.5">
                 {analysis.strengths?.map((item, idx) => (
                   <li key={idx} className="flex items-start space-x-2 text-xs text-gray-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -184,7 +184,7 @@ export const ResumeAnalyzerPage: React.FC = () => {
               <ul className="space-y-2.5">
                 {analysis.weaknesses?.map((item, idx) => (
                   <li key={idx} className="flex items-start space-x-2 text-xs text-gray-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -218,7 +218,7 @@ export const ResumeAnalyzerPage: React.FC = () => {
               <ul className="space-y-2.5">
                 {analysis.atsSuggestions?.map((item, idx) => (
                   <li key={idx} className="flex items-start space-x-2 text-xs text-gray-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}

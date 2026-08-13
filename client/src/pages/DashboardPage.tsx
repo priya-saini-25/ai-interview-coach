@@ -45,7 +45,7 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Placement Readiness Banner */}
-      <div className="relative overflow-hidden glass-panel p-8 rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-[#0b0f19]">
+      <div className="relative overflow-hidden glass-panel p-6 md:p-8 rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-[#0b0f19]">
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="max-w-xl">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-semibold mb-3 border border-indigo-500/20">
@@ -60,7 +60,7 @@ export const DashboardPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center space-x-4 bg-gray-900/60 p-4 rounded-xl border border-gray-800 backdrop-blur-md">
+          <div className="flex items-center space-x-4 bg-gray-900/60 p-4 rounded-xl border border-gray-800 backdrop-blur-md shadow-sm">
             <div className="text-center">
               <div className="w-20 h-20 rounded-full border-4 border-indigo-500 flex items-center justify-center text-2xl font-extrabold text-white shadow-lg shadow-indigo-500/20">
                 {overallScore}%
@@ -162,7 +162,7 @@ export const DashboardPage: React.FC = () => {
       {/* Quick Action Banner */}
       <div className="glass-panel p-6 rounded-2xl border border-gray-800">
         <h3 className="text-lg font-bold text-white mb-4">Quick Preparation Actions</h3>
-        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <Link to="/resume">
             <div className="p-4 rounded-xl bg-gray-900/60 border border-gray-800 hover:border-indigo-500/40 transition group">
               <FileText className="w-6 h-6 text-indigo-400 mb-2 group-hover:scale-110 transition-transform" />
@@ -191,7 +191,7 @@ export const DashboardPage: React.FC = () => {
             <div className="p-4 rounded-xl bg-gray-900/60 border border-gray-800 hover:border-pink-500/40 transition group">
               <Video className="w-6 h-6 text-pink-400 mb-2 group-hover:scale-110 transition-transform" />
               <h4 className="text-sm font-semibold text-white">Start Mock Interview</h4>
-              <p className="text-xs text-gray-400 mt-1">5-question AI mock interview</p>
+              <p className="text-xs text-gray-400 mt-1">15-question sectioned AI interview</p>
             </div>
           </Link>
         </div>

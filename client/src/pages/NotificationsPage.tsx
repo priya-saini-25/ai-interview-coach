@@ -68,7 +68,7 @@ export const NotificationsPage: React.FC = () => {
         <Card className="p-12 text-center text-gray-400">
           <Bell className="w-12 h-12 mx-auto text-gray-600 mb-3" />
           <h3 className="text-base font-bold text-white">No Notifications Yet</h3>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-400 mt-1">
             System alerts and activity updates will appear here automatically.
           </p>
         </Card>
@@ -93,7 +93,7 @@ export const NotificationsPage: React.FC = () => {
                     )}
                   </h4>
                   <p className="text-xs text-gray-300 mt-1">{item.message}</p>
-                  <span className="text-[10px] text-gray-500 mt-2 block">
+                  <span className="text-[10px] text-gray-400 mt-2 block">
                     {new Date(item.createdAt).toLocaleString()}
                   </span>
                 </div>

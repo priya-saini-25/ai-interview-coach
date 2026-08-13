@@ -505,7 +505,7 @@ export const DsaTrackerPage: React.FC = () => {
       {/* Problem View Modal */}
       {activeProblem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="glass-panel p-6 rounded-2xl border border-gray-800 max-w-2xl w-full shadow-2xl space-y-6 my-8">
+          <div className="glass-panel p-6 rounded-2xl border border-gray-800 max-w-2xl w-full shadow-2xl space-y-6 my-8 bg-[#0b0f19]">
             {/* Modal Header */}
             <div className="flex items-start justify-between border-b border-gray-800 pb-4">
               <div>
@@ -659,7 +659,7 @@ export const DsaTrackerPage: React.FC = () => {
       {/* Modal for Custom Manual Topic */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="glass-panel p-6 rounded-2xl border border-gray-800 max-w-md w-full shadow-2xl">
+          <div className="glass-panel p-6 rounded-2xl border border-gray-800 max-w-md w-full shadow-2xl bg-[#0b0f19]">
             <h3 className="text-lg font-bold text-white mb-4">Add Custom DSA Topic</h3>
             <form onSubmit={handleSubmit(onAddSubmit)} className="space-y-4">
               <Input

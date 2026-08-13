@@ -81,8 +81,22 @@ exports.startInterview = async (req, res, next) => {
     // Clean and validate question items
     questions = questions
       .filter((q) => q !== null && q !== undefined)
-      .map((q) => (typeof q === 'string' ? q.trim() : String(q).trim()))
-      .filter((q) => q.length > 0);
+      .map((q, idx) => {
+        if (typeof q === 'object' && q.question) {
+          return {
+            id: q.id || idx + 1,
+            section: q.section || (idx < 5 ? 'Technical' : idx < 8 ? 'Logical' : idx < 11 ? 'Personal' : 'HR / Behavioral'),
+            question: String(q.question).trim(),
+          };
+        }
+        const strQ = String(q).trim();
+        return {
+          id: idx + 1,
+          section: idx < 5 ? 'Technical' : idx < 8 ? 'Logical' : idx < 11 ? 'Personal' : 'HR / Behavioral',
+          question: strQ,
+        };
+      })
+      .filter((q) => q.question.length > 0);
 
     if (questions.length === 0) {
       console.error('AI response contained no valid interview questions array.');
@@ -92,15 +106,25 @@ exports.startInterview = async (req, res, next) => {
       });
     }
 
-    // Ensure exactly 5 questions are returned
-    if (questions.length > 5) {
-      questions = questions.slice(0, 5);
+    // Default structure for 15 sectioned questions if needed
+    const defaultSections = [
+      ...Array(5).fill({ section: 'Technical', template: (i) => `Explain a key core concept or system design challenge in your experience as a ${trimmedRole} (Technical Question ${i}).` }),
+      ...Array(3).fill({ section: 'Logical', template: (i) => `How would you approach solving a complex algorithmic or data structure problem under constraints? (Logical Question ${i}).` }),
+      ...Array(3).fill({ section: 'Personal', template: (i) => `Walk me through your background and key achievements relevant to ${trimmedRole} (Personal Question ${i}).` }),
+      ...Array(4).fill({ section: 'HR / Behavioral', template: (i) => `Describe a situation where you managed competing priorities or resolved a team disagreement (Behavioral Question ${i}).` }),
+    ];
+
+    if (questions.length > 15) {
+      questions = questions.slice(0, 15);
     } else {
-      while (questions.length < 5) {
-        const index = questions.length + 1;
-        questions.push(
-          `Describe a key technical challenge or project accomplishment in your experience as a ${trimmedRole} (Question ${index}).`
-        );
+      while (questions.length < 15) {
+        const idx = questions.length;
+        const secInfo = defaultSections[idx] || { section: 'HR / Behavioral', template: (i) => `Describe your career goals and preparation for ${trimmedRole}.` };
+        questions.push({
+          id: idx + 1,
+          section: secInfo.section,
+          question: secInfo.template(idx + 1),
+        });
       }
     }
 
@@ -190,7 +214,7 @@ exports.submitInterview = async (req, res, next) => {
       });
     }
 
-    // Update interview session with score, feedback, and completed status
+    // Update interview session with score, feedback, sectionScores, detailedAnalysis, and completed status
     session.score = typeof parsedResponse.score === 'number'
       ? Math.max(0, Math.min(100, Math.round(parsedResponse.score)))
       : 75;
@@ -209,9 +233,26 @@ exports.submitInterview = async (req, res, next) => {
 
     feedback = feedback.map((f) => (typeof f === 'string' ? f.trim() : String(f).trim()));
     while (feedback.length < session.questions.length) {
-      feedback.push('Response evaluated: shows fundamental domain understanding.');
+      feedback.push('Response evaluated: candidate demonstrated core concepts.');
     }
 
+    const secScores = parsedResponse.sectionScores || {};
+    session.sectionScores = {
+      technical: typeof secScores.technical === 'number' ? Math.round(secScores.technical) : Math.round(session.score * 0.95),
+      logical: typeof secScores.logical === 'number' ? Math.round(secScores.logical) : Math.round(session.score * 1.02),
+      personal: typeof secScores.personal === 'number' ? Math.round(secScores.personal) : Math.round(session.score * 1.05),
+      hr: typeof secScores.hr === 'number' ? Math.round(secScores.hr) : Math.round(session.score * 0.98),
+    };
+
+    session.detailedAnalysis = {
+      strengths: Array.isArray(parsedResponse.strengths) ? parsedResponse.strengths : ['Solid foundational technical knowledge', 'Good communication structure'],
+      weaknesses: Array.isArray(parsedResponse.weaknesses) ? parsedResponse.weaknesses : ['Needs deeper STAR framework examples for behavioral questions'],
+      recommendations: Array.isArray(parsedResponse.recommendations) ? parsedResponse.recommendations : ['Practice timed problem solving and quantitative metrics in project descriptions'],
+      questionsToImprove: Array.isArray(parsedResponse.questionsToImprove) ? parsedResponse.questionsToImprove : ['Review edge cases in technical questions'],
+      overallReadiness: parsedResponse.overallReadiness || 'Ready for Initial Screening & Technical Rounds',
+    };
+
+    session.answers = answers;
     session.feedback = feedback;
     session.completed = true;
 
@@ -228,7 +269,9 @@ exports.submitInterview = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       score: session.score,
+      sectionScores: session.sectionScores,
       feedback: session.feedback,
+      detailedAnalysis: session.detailedAnalysis,
     });
   } catch (error) {
     next(error);

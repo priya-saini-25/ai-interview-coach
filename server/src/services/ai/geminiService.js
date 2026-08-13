@@ -174,7 +174,7 @@ Return raw JSON ONLY with no code block fences or extra text.`;
 };
 
 /**
- * Generates 5 interview questions using Google Gemini AI based on role, difficulty, and company.
+ * Generates 15 interview questions across 4 sections using Google Gemini AI.
  * @param {Object} data - Interview parameters ({ role, difficulty, company }).
  * @returns {Promise<string>} - Raw JSON string from Gemini AI with questions array.
  */
@@ -183,22 +183,36 @@ const generateInterviewQuestions = async (data) => {
 
   const modelsToTry = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-flash-latest'];
 
-  const prompt = `You are an expert technical interviewer.
-Generate exactly 5 interview questions for a candidate applying for the role of "${role}"${company ? ` at "${company}"` : ''} with difficulty level "${difficulty || 'Medium'}".
+  const prompt = `You are an expert technical interviewer and HR director.
+Generate exactly 15 interview questions divided across 4 distinct sections for a candidate applying for the role of "${role}"${company ? ` at "${company}"` : ''} with difficulty level "${difficulty || 'Medium'}":
+- Section 1: Technical (5 questions)
+- Section 2: Logical / Problem Solving (3 questions)
+- Section 3: Personal / Introduction (3 questions)
+- Section 4: HR / Behavioral (4 questions)
 
 Return ONLY a valid JSON object matching this exact schema:
 {
   "questions": [
-    "Question 1...",
-    "Question 2...",
-    "Question 3...",
-    "Question 4...",
-    "Question 5..."
+    { "id": 1, "section": "Technical", "question": "Technical Question 1..." },
+    { "id": 2, "section": "Technical", "question": "Technical Question 2..." },
+    { "id": 3, "section": "Technical", "question": "Technical Question 3..." },
+    { "id": 4, "section": "Technical", "question": "Technical Question 4..." },
+    { "id": 5, "section": "Technical", "question": "Technical Question 5..." },
+    { "id": 6, "section": "Logical", "question": "Logical / Problem Solving Question 1..." },
+    { "id": 7, "section": "Logical", "question": "Logical / Problem Solving Question 2..." },
+    { "id": 8, "section": "Logical", "question": "Logical / Problem Solving Question 3..." },
+    { "id": 9, "section": "Personal", "question": "Personal / Introduction Question 1..." },
+    { "id": 10, "section": "Personal", "question": "Personal / Introduction Question 2..." },
+    { "id": 11, "section": "Personal", "question": "Personal / Introduction Question 3..." },
+    { "id": 12, "section": "HR / Behavioral", "question": "HR / Behavioral Question 1..." },
+    { "id": 13, "section": "HR / Behavioral", "question": "HR / Behavioral Question 2..." },
+    { "id": 14, "section": "HR / Behavioral", "question": "HR / Behavioral Question 3..." },
+    { "id": 15, "section": "HR / Behavioral", "question": "HR / Behavioral Question 4..." }
   ]
 }
 
 Instructions:
-- The "questions" array must contain EXACTLY 5 clear, relevant, and realistic interview questions tailored to the specified role, difficulty, and company.
+- The "questions" array must contain EXACTLY 15 clear, relevant, and realistic interview questions tailored to the specified role, difficulty, and company.
 - Do NOT include any markdown formatting, code block fences (such as \`\`\`json), or conversational text.
 - Return raw JSON ONLY.`;
 
@@ -256,7 +270,7 @@ Instructions:
 /**
  * Evaluates candidate interview answers using Google Gemini AI.
  * @param {Object} data - Questions and candidate answers along with context ({ role, difficulty, company, questions, answers }).
- * @returns {Promise<string>} - Raw JSON string from Gemini AI with score and feedback array.
+ * @returns {Promise<string>} - Raw JSON string from Gemini AI with score, sectionScores, feedback array, and detailedAnalysis.
  */
 const evaluateInterviewAnswers = async (data) => {
   const { role, difficulty, company, questions, answers } = data;
@@ -264,7 +278,10 @@ const evaluateInterviewAnswers = async (data) => {
   const modelsToTry = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-flash-latest'];
 
   const qaFormatted = questions
-    .map((q, i) => `Q${i + 1}: ${q}\nCandidate Answer: ${answers[i] || 'No answer provided.'}`)
+    .map((q, i) => {
+      const qText = typeof q === 'object' && q.question ? `[${q.section || 'General'}] ${q.question}` : String(q);
+      return `Q${i + 1}: ${qText}\nCandidate Answer: ${answers[i] || 'No answer provided.'}`;
+    })
     .join('\n\n');
 
   const prompt = `You are an expert technical interviewer evaluating a candidate's responses for a "${role}" position${company ? ` at "${company}"` : ''} (Difficulty: "${difficulty || 'Medium'}").
@@ -273,21 +290,44 @@ Here are the questions and candidate answers:
 
 ${qaFormatted}
 
-Evaluate the candidate's answers overall and return ONLY a valid JSON object matching this exact schema:
+Evaluate the candidate's performance across all sections and return ONLY a valid JSON object matching this exact schema:
 {
   "score": 82,
+  "sectionScores": {
+    "technical": 80,
+    "logical": 85,
+    "personal": 90,
+    "hr": 78
+  },
   "feedback": [
     "Feedback for Question 1...",
-    "Feedback for Question 2...",
-    "Feedback for Question 3...",
-    "Feedback for Question 4...",
-    "Feedback for Question 5..."
-  ]
+    "Feedback for Question 2..."
+  ],
+  "strengths": [
+    "Clear architectural explanations in Technical round",
+    "Polished self-introduction and project breakdown"
+  ],
+  "weaknesses": [
+    "Needs more quantitative metric examples in Behavioral questions",
+    "Missed edge case analysis in Logical problem solving"
+  ],
+  "recommendations": [
+    "Use STAR method (Situation, Task, Action, Result) for HR scenarios",
+    "Practice binary search and dynamic programming optimization"
+  ],
+  "questionsToImprove": [
+    "Q3 (Technical): Deepen knowledge of async error handling",
+    "Q13 (HR / Behavioral): Detail how conflict resolution led to successful outcome"
+  ],
+  "overallReadiness": "Strong Candidate - Recommended for Final Rounds"
 }
 
 Instructions:
-- "score" must be an integer between 0 and 100 representing the overall interview performance score based on accuracy, depth, clarity, and relevance.
-- "feedback" must be an array of 5 concise, constructive, and actionable feedback strings evaluating each question's answer individually.
+- "score" must be an integer between 0 and 100 representing the overall performance score.
+- "sectionScores" must contain integers (0-100) for "technical", "logical", "personal", and "hr".
+- "feedback" must contain concise, constructive feedback strings evaluating each question individually.
+- "strengths", "weaknesses", "recommendations", and "questionsToImprove" must each be an array of 2-4 actionable bullet strings.
+- "overallReadiness" must be a single summary verdict string.
 - Do NOT include any markdown formatting, code block fences (such as \`\`\`json), or conversational text.
 - Return raw JSON ONLY.`;
 

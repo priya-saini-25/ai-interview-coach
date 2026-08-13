@@ -62,9 +62,10 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
 
         if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
           return (
-            <li key={idx} className="ml-4 list-disc text-gray-300">
-              {formatInline(trimmed.substring(2))}
-            </li>
+            <div key={idx} className="flex items-start space-x-2 pl-2">
+              <span className="text-indigo-400 font-bold">•</span>
+              <span>{formatInline(trimmed.substring(2))}</span>
+            </div>
           );
         }
 
@@ -242,7 +243,7 @@ export const MentorPage: React.FC = () => {
               onClick={() => clearHistoryMutation.mutate()}
               isLoading={clearHistoryMutation.isPending}
               leftIcon={<Trash2 className="w-3.5 h-3.5 text-red-400" />}
-              className="text-red-400 hover:text-red-300 hover:bg-red-500/10 text-xs"
+              className="text-red-400 hover:bg-red-500/10 text-xs"
             >
               Clear Chat
             </Button>
@@ -251,7 +252,7 @@ export const MentorPage: React.FC = () => {
       </div>
 
       {/* Main Chat Container */}
-      <Card className="flex-1 p-0 overflow-hidden flex flex-col border-gray-800 bg-[#0b0f19]/90">
+      <Card className="flex-1 p-0 overflow-hidden flex flex-col border border-gray-800 bg-[#0b0f19]/90 shadow-sm">
         {/* Messages Feed */}
         <div className="flex-1 p-6 overflow-y-auto space-y-6">
           {isHistoryLoading ? (
@@ -271,7 +272,7 @@ export const MentorPage: React.FC = () => {
 
               {/* Quick Prompt Chips */}
               <div className="w-full pt-4 space-y-2">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Suggested Questions</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Suggested Questions</p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {suggestedPrompts.map((promptText, idx) => (
                     <button
@@ -310,7 +311,7 @@ export const MentorPage: React.FC = () => {
                       className={`max-w-2xl p-4 rounded-2xl ${
                         isUser
                           ? 'bg-indigo-600 text-white rounded-tr-none shadow-lg shadow-indigo-600/20'
-                          : 'glass-panel bg-gray-900/90 border border-gray-800 text-gray-100 rounded-tl-none shadow-xl'
+                          : 'glass-panel bg-gray-900/90 border border-gray-800 text-gray-100 rounded-tl-none shadow-md'
                       }`}
                     >
                       {isUser ? (
@@ -345,7 +346,7 @@ export const MentorPage: React.FC = () => {
         <div className="p-4 border-t border-gray-800 bg-gray-950/80 backdrop-blur-md">
           {messages.length > 0 && (
             <div className="flex items-center space-x-2 overflow-x-auto pb-2 mb-2 no-scrollbar">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 shrink-0">Quick Prompts:</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 shrink-0">Quick Prompts:</span>
               {suggestedPrompts.slice(0, 3).map((promptText, idx) => (
                 <button
                   key={idx}
