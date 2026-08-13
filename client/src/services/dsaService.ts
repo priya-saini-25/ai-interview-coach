@@ -1,5 +1,5 @@
 import { api } from './api';
-import { ApiResponse, DsaStats, DsaTopic, DsaProblem, DsaRecommendationResponse } from '../types';
+import { ApiResponse, DsaStats, DsaTopic, DsaProblem, DsaRecommendationResponse, DsaAnalyticsData } from '../types';
 
 export interface AddTopicPayload {
   topic: string;
@@ -70,4 +70,65 @@ export const dsaService = {
     const response = await api.get<ApiResponse<{ stats: DsaStats }>>('/dsa/stats');
     return (response.data as any).stats;
   },
+
+  getAnalytics: async (): Promise<DsaAnalyticsData> => {
+    const response = await api.get<ApiResponse<DsaAnalyticsData>>('/dsa/analytics');
+    return response.data.data!;
+  },
+
+  connectPlatforms: async (handles: { leetcode?: string; codeforces?: string; codechef?: string; hackerrank?: string }): Promise<any> => {
+    const response = await api.post<ApiResponse<any>>('/dsa/platforms/connect', handles);
+    return response.data.data;
+  },
+
+  syncPlatforms: async (): Promise<any> => {
+    const response = await api.post<ApiResponse<any>>('/dsa/platforms/sync');
+    return response.data;
+  },
+
+  getPlatforms: async (): Promise<any> => {
+    const response = await api.get<ApiResponse<any>>('/dsa/platforms');
+    return response.data.data;
+  },
+
+  getAiAnalysis: async (): Promise<any> => {
+    const response = await api.post<ApiResponse<any>>('/dsa/ai-analysis');
+    return response.data.data;
+  },
+
+  generateRoadmap: async (force: boolean = false): Promise<any> => {
+    const response = await api.post<ApiResponse<any>>(`/dsa/roadmap/generate${force ? '?force=true' : ''}`);
+    return response.data.data;
+  },
+
+  getRoadmap: async (): Promise<any> => {
+    const response = await api.get<ApiResponse<any>>('/dsa/roadmap');
+    return response.data.data;
+  },
+
+  updateRoadmapProblem: async (problemId: string, completed: boolean = true): Promise<any> => {
+    const response = await api.put<ApiResponse<any>>(`/dsa/roadmap/problem/${problemId}`, { completed });
+    return response.data.data;
+  },
+
+  getTodayRevision: async (): Promise<any> => {
+    const response = await api.get<ApiResponse<any>>('/dsa/revision/today');
+    return response.data.data;
+  },
+
+  reviewRevision: async (problemId: string, result: 'success' | 'failure' | 'skipped', difficultyRating?: number): Promise<any> => {
+    const response = await api.post<ApiResponse<any>>(`/dsa/revision/${problemId}/review`, { result, difficultyRating });
+    return response.data.data;
+  },
+
+  getRevisionStats: async (): Promise<any> => {
+    const response = await api.get<ApiResponse<any>>('/dsa/revision/stats');
+    return response.data.data;
+  },
+
+  getUpcomingRevision: async (days: number = 30): Promise<any> => {
+    const response = await api.get<ApiResponse<any>>(`/dsa/revision/upcoming?days=${days}`);
+    return response.data.data;
+  },
 };
+

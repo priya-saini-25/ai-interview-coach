@@ -43,6 +43,7 @@ ${resumeText}`;
         model: modelName,
         contents: prompt,
         config: {
+          temperature: 0,
           responseMimeType: 'application/json',
         },
       });
