@@ -33,28 +33,28 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
   const lines = content.split('\n');
 
   return (
-    <div className="space-y-2 text-sm leading-relaxed font-sans text-gray-200">
+    <div className="space-y-2 text-sm leading-relaxed font-sans text-gray-200 light:text-slate-800">
       {lines.map((line, idx) => {
         const trimmed = line.trim();
         if (!trimmed) return <div key={idx} className="h-1" />;
 
         if (trimmed.startsWith('### ')) {
           return (
-            <h4 key={idx} className="text-sm font-bold text-indigo-300 mt-3 mb-1">
+            <h4 key={idx} className="text-sm font-bold text-indigo-300 light:text-indigo-700 mt-3 mb-1">
               {formatInline(trimmed.replace('### ', ''))}
             </h4>
           );
         }
         if (trimmed.startsWith('## ')) {
           return (
-            <h3 key={idx} className="text-base font-bold text-white mt-4 mb-1">
+            <h3 key={idx} className="text-base font-bold text-white light:text-slate-900 mt-4 mb-1">
               {formatInline(trimmed.replace('## ', ''))}
             </h3>
           );
         }
         if (trimmed.startsWith('# ')) {
           return (
-            <h2 key={idx} className="text-lg font-extrabold text-white mt-4 mb-2">
+            <h2 key={idx} className="text-lg font-extrabold text-white light:text-slate-900 mt-4 mb-2">
               {formatInline(trimmed.replace('# ', ''))}
             </h2>
           );
@@ -62,9 +62,10 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
 
         if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
           return (
-            <li key={idx} className="ml-4 list-disc text-gray-300">
-              {formatInline(trimmed.substring(2))}
-            </li>
+            <div key={idx} className="flex items-start space-x-2 pl-2">
+              <span className="text-indigo-400 light:text-indigo-600 font-bold">•</span>
+              <span>{formatInline(trimmed.substring(2))}</span>
+            </div>
           );
         }
 

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
-import { Compass, Sparkles, Target, Building, Calendar, DollarSign, Award } from 'lucide-react';
+import { Compass, Sparkles, Target, Building, Calendar, DollarSign, Award, Save, Download, CheckCircle2 } from 'lucide-react';
 import { roadmapService, GenerateRoadmapPayload } from '../services/roadmapService';
 import { dashboardService } from '../services/dashboardService';
 import { Input } from '../components/common/Input';
@@ -38,7 +38,7 @@ export const RoadmapPage: React.FC = () => {
   const generateMutation = useMutation({
     mutationFn: roadmapService.generateRoadmap,
     onSuccess: (data) => {
-      toast.success('AI Placement Roadmap generated!');
+      toast.success('AI Placement Roadmap generated & persisted!');
       queryClient.setQueryData(['userRoadmap'], data);
       queryClient.invalidateQueries({ queryKey: ['userRoadmap'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
@@ -51,8 +51,18 @@ export const RoadmapPage: React.FC = () => {
     },
   });
 
+  const saveMutation = useMutation({
+    mutationFn: roadmapService.saveRoadmap,
+    onSuccess: () => {
+      toast.success('Roadmap saved successfully to your account!');
+      queryClient.invalidateQueries({ queryKey: ['userRoadmap'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to save roadmap');
+    },
+  });
+
   const onSubmit = (data: GenerateRoadmapPayload) => {
-    // Format skills string array if entered as string
     const skillsArray = typeof data.currentSkills === 'string'
       ? (data.currentSkills as string).split(',').map(s => s.trim())
       : data.currentSkills;
@@ -61,6 +71,29 @@ export const RoadmapPage: React.FC = () => {
       ...data,
       currentSkills: skillsArray,
     });
+  };
+
+  const handleSaveRoadmap = () => {
+    if (!roadmapData?.roadmap) return;
+    saveMutation.mutate({
+      targetRole: roadmapData.targetRole || 'Software Development Engineer',
+      targetCompany: roadmapData.targetCompany || 'Tech Company',
+      currentYear: roadmapData.currentYear || '3rd Year',
+      currentSkills: roadmapData.currentSkills || [],
+      targetPackage: roadmapData.targetPackage || '20 LPA',
+      roadmap: roadmapData.roadmap,
+    });
+  };
+
+  const handleDownloadRoadmap = () => {
+    if (!roadmapData?.roadmap) {
+      toast.error('No roadmap available to download');
+      return;
+    }
+    toast.success('Opening print/download view. Choose "Save as PDF"');
+    setTimeout(() => {
+      window.print();
+    }, 300);
   };
 
   if (isSummaryLoading || isRoadmapLoading) {
@@ -77,23 +110,23 @@ export const RoadmapPage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header Banner */}
-      <div className="glass-panel p-6 md:p-8 rounded-2xl border border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+      <div className="glass-panel p-6 md:p-8 rounded-2xl border border-gray-800 light:border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 no-print">
         <div>
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-semibold mb-3 border border-purple-500/20">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 light:text-purple-600 text-xs font-semibold mb-3 border border-purple-500/20">
             <Compass className="w-3.5 h-3.5" />
             <span>AI Career Strategist</span>
           </div>
-          <h1 className="text-2xl font-bold text-white">6-Month AI Placement Roadmap</h1>
-          <p className="text-sm text-gray-400 mt-1 max-w-xl">
+          <h1 className="text-2xl font-bold text-white light:text-slate-900">6-Month AI Placement Roadmap</h1>
+          <p className="text-sm text-gray-400 light:text-slate-600 mt-1 max-w-xl">
             Get a comprehensive month-by-month, week-by-week prep strategy tailored to your dream role, company, and package.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 bg-gray-900/80 p-1.5 rounded-xl border border-gray-800">
+        <div className="flex items-center space-x-2 bg-gray-900/80 light:bg-slate-100 p-1.5 rounded-xl border border-gray-800 light:border-slate-300">
           <button
             onClick={() => setActiveTab('view')}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition ${
-              activeTab === 'view' ? 'bg-purple-600 text-white shadow' : 'text-gray-400 hover:text-white'
+              activeTab === 'view' ? 'bg-purple-600 text-white shadow' : 'text-gray-400 light:text-slate-600 hover:text-white light:hover:text-slate-900'
             }`}
           >
             View Roadmap
@@ -101,7 +134,7 @@ export const RoadmapPage: React.FC = () => {
           <button
             onClick={() => setActiveTab('generate')}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition ${
-              activeTab === 'generate' ? 'bg-purple-600 text-white shadow' : 'text-gray-400 hover:text-white'
+              activeTab === 'generate' ? 'bg-purple-600 text-white shadow' : 'text-gray-400 light:text-slate-600 hover:text-white light:hover:text-slate-900'
             }`}
           >
             Generate New
@@ -111,10 +144,10 @@ export const RoadmapPage: React.FC = () => {
 
       {/* Form Tab */}
       {(activeTab === 'generate' || !hasRoadmap) && (
-        <Card className="max-w-3xl mx-auto border-purple-500/30">
-          <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-800">
-            <Sparkles className="w-5 h-5 text-purple-400" />
-            <h3 className="text-lg font-bold text-white">Configure Target Profile</h3>
+        <Card className="max-w-3xl mx-auto border-purple-500/30 no-print">
+          <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-800 light:border-slate-200">
+            <Sparkles className="w-5 h-5 text-purple-400 light:text-purple-600" />
+            <h3 className="text-lg font-bold text-white light:text-slate-900">Configure Target Profile</h3>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -176,14 +209,55 @@ export const RoadmapPage: React.FC = () => {
 
       {/* Roadmap Markdown Content Display */}
       {activeTab === 'view' && hasRoadmap && !generateMutation.isPending && (
-        <Card className="prose prose-invert max-w-none p-8 leading-relaxed">
-          <div className="text-gray-200">
-            <p className="text-sm text-purple-300 font-semibold mb-4">
-              Note: To update your target role or company, click "Generate New".
-            </p>
-            <ReactMarkdown>{roadmapMarkdown}</ReactMarkdown>
+        <div className="space-y-6">
+          {/* Action Toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl glass-panel border border-gray-800 light:border-slate-200 no-print">
+            <div className="flex items-center space-x-2 text-xs text-purple-400 light:text-purple-600 font-semibold">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>Saved for authenticated user</span>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleSaveRoadmap}
+                isLoading={saveMutation.isPending}
+                leftIcon={<Save className="w-4 h-4 text-indigo-400" />}
+              >
+                Save Roadmap
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleDownloadRoadmap}
+                leftIcon={<Download className="w-4 h-4" />}
+                className="bg-purple-600 hover:bg-purple-500"
+              >
+                Download Roadmap (PDF)
+              </Button>
+            </div>
           </div>
-        </Card>
+
+          {/* Printable Document View */}
+          <Card className="prose prose-invert max-w-none p-6 sm:p-8 leading-relaxed light:prose-slate">
+            <div className="border-b border-gray-800 light:border-slate-200 pb-6 mb-6">
+              <h2 className="text-xl font-bold text-purple-400 light:text-purple-700 m-0">
+                {roadmapData?.targetRole || 'Software Engineer'} AI Placement Roadmap
+              </h2>
+              <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-400 light:text-slate-600 font-medium">
+                {roadmapData?.targetCompany && <span>Target Company: <strong>{roadmapData.targetCompany}</strong></span>}
+                {roadmapData?.currentYear && <span>Year/Level: <strong>{roadmapData.currentYear}</strong></span>}
+                {roadmapData?.targetPackage && <span>Target CTC: <strong>{roadmapData.targetPackage}</strong></span>}
+                {roadmapData?.updatedAt && <span>Last Updated: <strong>{new Date(roadmapData.updatedAt).toLocaleDateString()}</strong></span>}
+              </div>
+            </div>
+
+            <div className="text-gray-200 light:text-slate-800">
+              <ReactMarkdown>{roadmapMarkdown}</ReactMarkdown>
+            </div>
+          </Card>
+        </div>
       )}
     </div>
   );

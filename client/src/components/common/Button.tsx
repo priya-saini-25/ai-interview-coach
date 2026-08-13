@@ -24,10 +24,10 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantClasses = {
     primary: 'bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white shadow-lg shadow-indigo-500/25 focus:ring-indigo-500',
-    secondary: 'bg-gray-800 hover:bg-gray-700 text-gray-100 border border-gray-700 focus:ring-gray-600',
-    outline: 'border border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10 focus:ring-indigo-500',
+    secondary: 'bg-gray-800 light:bg-slate-200 hover:bg-gray-700 light:hover:bg-slate-300 text-gray-100 light:text-slate-800 border border-gray-700 light:border-slate-300 focus:ring-gray-600',
+    outline: 'border border-indigo-500/50 text-indigo-400 light:text-indigo-600 hover:bg-indigo-500/10 focus:ring-indigo-500',
     danger: 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/20 focus:ring-red-500',
-    ghost: 'text-gray-400 hover:text-white hover:bg-gray-800/50 focus:ring-gray-600',
+    ghost: 'text-gray-400 light:text-slate-600 hover:text-white light:hover:text-slate-900 hover:bg-gray-800/50 light:hover:bg-slate-100 focus:ring-gray-600',
   };
 
   const sizeClasses = {

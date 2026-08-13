@@ -9,23 +9,64 @@ export interface GenerateRoadmapPayload {
   targetPackage: string;
 }
 
+export interface SaveRoadmapPayload {
+  targetRole?: string;
+  targetCompany?: string;
+  currentYear?: string;
+  currentSkills?: string[];
+  targetPackage?: string;
+  roadmap: string;
+}
+
 export const roadmapService = {
   getRoadmap: async (): Promise<RoadmapResponse | null> => {
     const response = await api.get<ApiResponse>('/roadmap');
-    const roadmapData = (response.data as any).roadmap;
-    if (!roadmapData) return null;
-    const rawRoadmap = typeof roadmapData === 'string'
-      ? roadmapData
-      : roadmapData.roadmap;
-    return { roadmap: rawRoadmap };
+    const data = response.data as any;
+    if (!data || (!data.roadmap && !data.data)) return null;
+    const rawRoadmap = typeof data.roadmap === 'string'
+      ? data.roadmap
+      : data.roadmap?.roadmap || '';
+    return {
+      roadmap: rawRoadmap,
+      targetRole: data.targetRole,
+      targetCompany: data.targetCompany,
+      currentYear: data.currentYear,
+      currentSkills: data.currentSkills,
+      targetPackage: data.targetPackage,
+      updatedAt: data.updatedAt,
+    };
   },
 
   generateRoadmap: async (payload: GenerateRoadmapPayload): Promise<RoadmapResponse> => {
     const response = await api.post<ApiResponse>('/roadmap/generate', payload);
-    const roadmapData = (response.data as any).roadmap;
-    const rawRoadmap = typeof roadmapData === 'string'
-      ? roadmapData
-      : roadmapData.roadmap;
-    return { roadmap: rawRoadmap };
+    const data = response.data as any;
+    const rawRoadmap = typeof data.roadmap === 'string'
+      ? data.roadmap
+      : data.roadmap?.roadmap || '';
+    return {
+      roadmap: rawRoadmap,
+      targetRole: payload.targetRole,
+      targetCompany: payload.targetCompany,
+      currentYear: payload.currentYear,
+      currentSkills: payload.currentSkills,
+      targetPackage: payload.targetPackage,
+    };
+  },
+
+  saveRoadmap: async (payload: SaveRoadmapPayload): Promise<RoadmapResponse> => {
+    const response = await api.post<ApiResponse>('/roadmap/save', payload);
+    const data = response.data as any;
+    const rawRoadmap = typeof data.roadmap === 'string'
+      ? data.roadmap
+      : data.roadmap?.roadmap || payload.roadmap;
+    return {
+      roadmap: rawRoadmap,
+      targetRole: data.targetRole,
+      targetCompany: data.targetCompany,
+      currentYear: data.currentYear,
+      currentSkills: data.currentSkills,
+      targetPackage: data.targetPackage,
+      updatedAt: data.updatedAt,
+    };
   },
 };

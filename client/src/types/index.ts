@@ -70,6 +70,7 @@ export interface RoadmapResponse {
   currentYear?: string;
   currentSkills?: string[];
   targetPackage?: string;
+  updatedAt?: string;
 }
 
 export interface DsaTopic {
@@ -130,15 +131,39 @@ export interface DsaStats {
   hard: number;
 }
 
+export interface QuestionItem {
+  id: number;
+  section: string;
+  question: string;
+}
+
+export interface SectionScores {
+  technical: number;
+  logical: number;
+  personal: number;
+  hr: number;
+}
+
+export interface DetailedAnalysis {
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  questionsToImprove: string[];
+  overallReadiness: string;
+}
+
 export interface InterviewSession {
   _id: string;
   user?: string;
   role: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   company?: string;
-  questions: string[];
+  questions: (string | QuestionItem)[];
+  answers?: string[];
   feedback: string[];
   score: number;
+  sectionScores?: SectionScores;
+  detailedAnalysis?: DetailedAnalysis;
   completed: boolean;
   createdAt: string;
   updatedAt: string;

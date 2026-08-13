@@ -23,6 +23,61 @@ exports.getRoadmap = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       roadmap: roadmapData.roadmap,
+      targetRole: roadmapData.targetRole,
+      targetCompany: roadmapData.targetCompany,
+      currentYear: roadmapData.currentYear,
+      currentSkills: roadmapData.currentSkills,
+      targetPackage: roadmapData.targetPackage,
+      updatedAt: roadmapData.updatedAt,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Explicitly save or update user's placement roadmap
+ * @route   POST /api/roadmap/save
+ * @access  Private
+ */
+exports.saveRoadmap = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const { targetRole, targetCompany, currentYear, currentSkills, targetPackage, roadmap } = req.body;
+
+    if (!userId || !roadmap) {
+      return res.status(400).json({
+        success: false,
+        message: 'Roadmap content is required to save.',
+      });
+    }
+
+    const savedRoadmap = await Roadmap.findOneAndUpdate(
+      { user: userId },
+      {
+        user: userId,
+        targetRole: targetRole || 'Software Development Engineer',
+        targetCompany: targetCompany || 'Tech Company',
+        currentYear: currentYear || '3rd Year',
+        currentSkills: Array.isArray(currentSkills) ? currentSkills : [],
+        targetPackage: targetPackage || '20 LPA',
+        roadmap,
+      },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      roadmap: savedRoadmap.roadmap,
+      targetRole: savedRoadmap.targetRole,
+      targetCompany: savedRoadmap.targetCompany,
+      currentYear: savedRoadmap.currentYear,
+      currentSkills: savedRoadmap.currentSkills,
+      targetPackage: savedRoadmap.targetPackage,
+      updatedAt: savedRoadmap.updatedAt,
     });
   } catch (error) {
     next(error);

@@ -87,15 +87,15 @@ export const ResumeAnalyzerPage: React.FC = () => {
       />
 
       {/* Upload Header Card */}
-      <div className="glass-panel p-6 md:p-8 rounded-2xl border border-gray-800">
+      <div className="glass-panel p-6 md:p-8 rounded-2xl border border-gray-800 light:border-slate-200">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-semibold mb-3 border border-indigo-500/20">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 light:text-indigo-600 text-xs font-semibold mb-3 border border-indigo-500/20">
               <Cpu className="w-3.5 h-3.5" />
               <span>ATS & Skill AI Auditor</span>
             </div>
-            <h1 className="text-2xl font-bold text-white">AI Resume Analyzer</h1>
-            <p className="text-sm text-gray-400 mt-1 max-w-xl">
+            <h1 className="text-2xl font-bold text-white light:text-slate-900">AI Resume Analyzer</h1>
+            <p className="text-sm text-gray-400 light:text-slate-600 mt-1 max-w-xl">
               Upload your PDF resume to extract key skills, receive ATS optimization advice, and calculate your market readiness score.
             </p>
           </div>
@@ -130,10 +130,10 @@ export const ResumeAnalyzerPage: React.FC = () => {
 
       {/* Loading state */}
       {(isAnalysisLoading || analyzeMutation.isPending) && (
-        <div className="glass-panel p-12 rounded-2xl border border-gray-800 text-center">
+        <div className="glass-panel p-12 rounded-2xl border border-gray-800 light:border-slate-200 text-center">
           <Spinner size="lg" className="mb-4" />
-          <h3 className="text-lg font-bold text-white">Analyzing Resume with Gemini AI...</h3>
-          <p className="text-xs text-gray-400 mt-1">Extracting text, evaluating ATS metrics, and scoring skills</p>
+          <h3 className="text-lg font-bold text-white light:text-slate-900">Analyzing Resume with Gemini AI...</h3>
+          <p className="text-xs text-gray-400 light:text-slate-600 mt-1">Extracting text, evaluating ATS metrics, and scoring skills</p>
         </div>
       )}
 
@@ -141,18 +141,18 @@ export const ResumeAnalyzerPage: React.FC = () => {
       {analysis && !analyzeMutation.isPending && (
         <div className="space-y-6">
           {/* Score Card */}
-          <Card className="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-[#0b0f19] border-indigo-500/30">
+          <Card className="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-[#0b0f19] light:from-indigo-50 light:via-purple-50 light:to-white border-indigo-500/30">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
-                <h3 className="text-xl font-bold text-white">Overall ATS Quality Score</h3>
-                <p className="text-xs text-gray-300 mt-1">
+                <h3 className="text-xl font-bold text-white light:text-slate-900">Overall ATS Quality Score</h3>
+                <p className="text-xs text-gray-300 light:text-slate-600 mt-1">
                   Based on keyword matching, industry alignment, structure, and formatting.
                 </p>
               </div>
 
-              <div className="flex items-center space-x-3 bg-gray-900/80 px-6 py-4 rounded-xl border border-indigo-500/30">
-                <span className="text-4xl font-extrabold text-indigo-400">{analysis.overallScore}</span>
-                <span className="text-xs text-gray-400 font-semibold uppercase">/ 100 ATS</span>
+              <div className="flex items-center space-x-3 bg-gray-900/80 light:bg-slate-100 px-6 py-4 rounded-xl border border-indigo-500/30">
+                <span className="text-4xl font-extrabold text-indigo-400 light:text-indigo-600">{analysis.overallScore}</span>
+                <span className="text-xs text-gray-400 light:text-slate-500 font-semibold uppercase">/ 100 ATS</span>
               </div>
             </div>
           </Card>
@@ -163,11 +163,11 @@ export const ResumeAnalyzerPage: React.FC = () => {
             <Card>
               <div className="flex items-center space-x-2 text-emerald-400 mb-4">
                 <CheckCircle className="w-5 h-5" />
-                <h4 className="text-base font-bold text-white">Resume Strengths</h4>
+                <h4 className="text-base font-bold text-white light:text-slate-900">Resume Strengths</h4>
               </div>
               <ul className="space-y-2.5">
                 {analysis.strengths?.map((item, idx) => (
-                  <li key={idx} className="flex items-start space-x-2 text-xs text-gray-300">
+                  <li key={idx} className="flex items-start space-x-2 text-xs text-gray-300 light:text-slate-700">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
                     <span>{item}</span>
                   </li>
@@ -179,11 +179,11 @@ export const ResumeAnalyzerPage: React.FC = () => {
             <Card>
               <div className="flex items-center space-x-2 text-amber-400 mb-4">
                 <AlertTriangle className="w-5 h-5" />
-                <h4 className="text-base font-bold text-white">Areas for Improvement</h4>
+                <h4 className="text-base font-bold text-white light:text-slate-900">Areas for Improvement</h4>
               </div>
               <ul className="space-y-2.5">
                 {analysis.weaknesses?.map((item, idx) => (
-                  <li key={idx} className="flex items-start space-x-2 text-xs text-gray-300">
+                  <li key={idx} className="flex items-start space-x-2 text-xs text-gray-300 light:text-slate-700">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
                     <span>{item}</span>
                   </li>
@@ -195,13 +195,13 @@ export const ResumeAnalyzerPage: React.FC = () => {
             <Card>
               <div className="flex items-center space-x-2 text-rose-400 mb-4">
                 <Target className="w-5 h-5" />
-                <h4 className="text-base font-bold text-white">Recommended Missing Skills</h4>
+                <h4 className="text-base font-bold text-white light:text-slate-900">Recommended Missing Skills</h4>
               </div>
               <div className="flex flex-wrap gap-2">
                 {analysis.missingSkills?.map((skill, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1 bg-rose-500/10 text-rose-300 border border-rose-500/20 rounded-lg text-xs font-medium"
+                    className="px-3 py-1 bg-rose-500/10 text-rose-300 light:text-rose-700 border border-rose-500/20 rounded-lg text-xs font-medium"
                   >
                     {skill}
                   </span>
@@ -213,11 +213,11 @@ export const ResumeAnalyzerPage: React.FC = () => {
             <Card>
               <div className="flex items-center space-x-2 text-indigo-400 mb-4">
                 <Lightbulb className="w-5 h-5" />
-                <h4 className="text-base font-bold text-white">ATS Formatting Advice</h4>
+                <h4 className="text-base font-bold text-white light:text-slate-900">ATS Formatting Advice</h4>
               </div>
               <ul className="space-y-2.5">
                 {analysis.atsSuggestions?.map((item, idx) => (
-                  <li key={idx} className="flex items-start space-x-2 text-xs text-gray-300">
+                  <li key={idx} className="flex items-start space-x-2 text-xs text-gray-300 light:text-slate-700">
                     <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
                     <span>{item}</span>
                   </li>
@@ -230,10 +230,10 @@ export const ResumeAnalyzerPage: React.FC = () => {
 
       {/* No Resume uploaded placeholder */}
       {!user?.resume && !isUploading && (
-        <div className="glass-panel p-12 rounded-2xl border border-gray-800 text-center max-w-lg mx-auto">
+        <div className="glass-panel p-12 rounded-2xl border border-gray-800 light:border-slate-200 text-center max-w-lg mx-auto">
           <FileUp className="w-12 h-12 text-indigo-400 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-white">No Resume Uploaded Yet</h3>
-          <p className="text-xs text-gray-400 mt-1 mb-6">
+          <h3 className="text-lg font-bold text-white light:text-slate-900">No Resume Uploaded Yet</h3>
+          <p className="text-xs text-gray-400 light:text-slate-600 mt-1 mb-6">
             Upload your resume PDF to unlock full AI analysis, ATS scoring, and placement recommendations.
           </p>
           <Button
