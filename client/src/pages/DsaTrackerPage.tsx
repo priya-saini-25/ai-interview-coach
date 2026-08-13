@@ -19,6 +19,9 @@ import {
   ArrowRight,
   BookOpen,
   Bookmark,
+  RefreshCw,
+  AlertTriangle,
+  Rocket,
 } from 'lucide-react';
 import { dsaService, AddTopicPayload } from '../services/dsaService';
 import { useAuth } from '../hooks/useAuth';
@@ -26,10 +29,20 @@ import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
 import { Input } from '../components/common/Input';
-import { StatCard } from '../components/common/StatCard';
 import { Spinner } from '../components/common/Spinner';
 import { ProgressBar } from '../components/common/ProgressBar';
 import { DsaProblem } from '../types';
+import { DsaSummaryCards } from '../components/dsa/DsaSummaryCards';
+import { DsaTopicProgressChart } from '../components/dsa/DsaTopicProgressChart';
+import { DsaDifficultyChart } from '../components/dsa/DsaDifficultyChart';
+import { DsaWeeklyProgressChart } from '../components/dsa/DsaWeeklyProgressChart';
+import { DsaMonthlyProgressChart } from '../components/dsa/DsaMonthlyProgressChart';
+import { DsaPlatformSync } from '../components/dsa/DsaPlatformSync';
+import { DsaAIWeaknessAnalysis } from '../components/dsa/DsaAIWeaknessAnalysis';
+import { DsaSevenDayRoadmap } from '../components/dsa/DsaSevenDayRoadmap';
+import { DsaRevisionStats } from '../components/dsa/DsaRevisionStats';
+import { DsaRevisionToday } from '../components/dsa/DsaRevisionToday';
+import { DsaRevisionCalendar } from '../components/dsa/DsaRevisionCalendar';
 
 export const DsaTrackerPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -45,7 +58,18 @@ export const DsaTrackerPage: React.FC = () => {
   const [showHint, setShowHint] = useState<boolean>(false);
 
   // Queries
-  const { data: stats, isLoading: isStatsLoading } = useQuery({
+  const {
+    data: analyticsData,
+    isLoading: isAnalyticsLoading,
+    isError: isAnalyticsError,
+    refetch: refetchAnalytics,
+    isRefetching: isAnalyticsRefetching,
+  } = useQuery({
+    queryKey: ['dsaAnalytics'],
+    queryFn: dsaService.getAnalytics,
+  });
+
+  const { data: stats, isLoading: isStatsLoading, refetch: refetchStats } = useQuery({
     queryKey: ['dsaStats'],
     queryFn: dsaService.getStats,
   });
@@ -54,6 +78,7 @@ export const DsaTrackerPage: React.FC = () => {
     data: recommendationData,
     isLoading: isRecLoading,
     isError: isRecError,
+    refetch: refetchRecommendations,
   } = useQuery({
     queryKey: ['dsaRecommendations', user?.targetRole, user?.targetCompany, selectedTopic, selectedDifficulty, selectedStatus],
     queryFn: () =>
@@ -70,6 +95,14 @@ export const DsaTrackerPage: React.FC = () => {
   const targetRole = recommendationData?.targetRole || user?.targetRole || '';
   const targetCompany = recommendationData?.targetCompany || user?.targetCompany || '';
 
+  // Refresh handler
+  const handleRefresh = () => {
+    refetchAnalytics();
+    refetchRecommendations();
+    refetchStats();
+    toast.success('DSA analytics and problems refreshed');
+  };
+
   // Manual Add Topic Form
   const { register, handleSubmit, reset, formState: { errors } } = useForm<AddTopicPayload>({
     defaultValues: {
@@ -81,8 +114,14 @@ export const DsaTrackerPage: React.FC = () => {
     mutationFn: (problemId: string) => dsaService.solveProblem(problemId),
     onSuccess: (data, problemId) => {
       toast.success('Problem marked as solved!');
+      queryClient.invalidateQueries({ queryKey: ['dsaAnalytics'] });
       queryClient.invalidateQueries({ queryKey: ['dsaRecommendations'] });
       queryClient.invalidateQueries({ queryKey: ['dsaStats'] });
+      queryClient.invalidateQueries({ queryKey: ['dsaRevisionToday'] });
+      queryClient.invalidateQueries({ queryKey: ['dsaRevisionStats'] });
+      queryClient.invalidateQueries({ queryKey: ['dsaRevisionUpcoming'] });
+      queryClient.invalidateQueries({ queryKey: ['dsaAIAnalysis'] });
+      queryClient.invalidateQueries({ queryKey: ['dsaRoadmap'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
       queryClient.invalidateQueries({ queryKey: ['readinessScore'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
@@ -115,6 +154,7 @@ export const DsaTrackerPage: React.FC = () => {
     mutationFn: dsaService.addTopic,
     onSuccess: () => {
       toast.success('Custom topic added successfully!');
+      queryClient.invalidateQueries({ queryKey: ['dsaAnalytics'] });
       queryClient.invalidateQueries({ queryKey: ['dsaRecommendations'] });
       queryClient.invalidateQueries({ queryKey: ['dsaStats'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
@@ -141,7 +181,9 @@ export const DsaTrackerPage: React.FC = () => {
     setShowHint(false);
   };
 
-  if (isStatsLoading && isRecLoading) {
+  const completionPercent = analyticsData?.summary?.completionPercentage ?? stats?.completionPercentage ?? 0;
+
+  if (isStatsLoading && isRecLoading && isAnalyticsLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <Spinner size="lg" />
@@ -159,7 +201,10 @@ export const DsaTrackerPage: React.FC = () => {
             <Sparkles className="w-3.5 h-3.5" />
             <span>Role-Aware Practice Engine</span>
           </div>
-          <h1 className="text-2xl font-bold text-white">DSA Preparation Tracker</h1>
+          <h1 className="text-2xl font-bold text-white">DSA Tracker</h1>
+          <p className="text-sm text-gray-400 mt-1">
+            Track your problem-solving progress and prepare smarter.
+          </p>
           
           {/* Target Role & Company Metadata Badge Bar */}
           <div className="flex flex-wrap items-center gap-3 mt-3">
@@ -183,10 +228,19 @@ export const DsaTrackerPage: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
+            onClick={handleRefresh}
+            isLoading={isAnalyticsRefetching}
+            leftIcon={<RefreshCw className={`w-4 h-4 ${isAnalyticsRefetching ? 'animate-spin' : ''}`} />}
+          >
+            Refresh
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
             onClick={() => setIsAddModalOpen(true)}
             leftIcon={<Plus className="w-4 h-4" />}
           >
-            Add Custom Topic
+            Add Topic
           </Button>
           <Link to="/profile">
             <Button variant="ghost" size="sm">
@@ -213,48 +267,82 @@ export const DsaTrackerPage: React.FC = () => {
         </div>
       )}
 
-      {/* Progress Dashboard Metric Cards */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Overall Solved"
-          value={`${stats?.completed || 0} / ${stats?.total || 40}`}
-          subtitle={`${stats?.completionPercentage || 0}% Solved`}
-          icon={<Code2 className="w-6 h-6 text-indigo-400" />}
-        />
-        <StatCard
-          title="Mastered Problems"
-          value={stats?.completed || 0}
-          subtitle="Persisted in Profile"
-          icon={<CheckCircle2 className="w-6 h-6 text-emerald-400" />}
-          iconBgColor="bg-emerald-500/10 text-emerald-400"
-        />
-        <StatCard
-          title="Remaining Problems"
-          value={stats?.pending || 0}
-          subtitle="Target Challenges"
-          icon={<Circle className="w-6 h-6 text-amber-400" />}
-          iconBgColor="bg-amber-500/10 text-amber-400"
-        />
-        <StatCard
-          title="Difficulty Breakdown"
-          value={`E:${stats?.easy || 0} M:${stats?.medium || 0} H:${stats?.hard || 0}`}
-          subtitle="Easy / Medium / Hard"
-          icon={<Award className="w-6 h-6 text-purple-400" />}
-          iconBgColor="bg-purple-500/10 text-purple-400"
-        />
+      {/* Error State Banner */}
+      {isAnalyticsError && (
+        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-between gap-4 text-red-300">
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold">Unable to load DSA analytics.</p>
+              <p className="text-xs text-red-400 mt-0.5">Please check network or server status and try again.</p>
+            </div>
+          </div>
+          <Button size="sm" variant="outline" className="border-red-500/30 text-red-300 hover:bg-red-500/20" onClick={() => refetchAnalytics()}>
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {/* Progress Dashboard Summary Metric Cards */}
+      <DsaSummaryCards analytics={analyticsData} isLoading={isAnalyticsLoading} />
+
+      {/* Analytics Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <DsaTopicProgressChart topics={analyticsData?.topicProgress} isLoading={isAnalyticsLoading} />
+        <DsaDifficultyChart difficultyProgress={analyticsData?.difficultyProgress} isLoading={isAnalyticsLoading} />
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <DsaWeeklyProgressChart weeklyProgress={analyticsData?.weeklyProgress} isLoading={isAnalyticsLoading} />
+        <DsaMonthlyProgressChart monthlyProgress={analyticsData?.monthlyProgress} isLoading={isAnalyticsLoading} />
+      </div>
+
+      {/* AI Qualitative Weakness Analysis Section */}
+      <DsaAIWeaknessAnalysis />
+
+      {/* Personalized 7-Day Roadmap Section */}
+      <DsaSevenDayRoadmap />
+
+      {/* Smart Spaced Repetition Revision Section */}
+      <div className="space-y-6">
+        <DsaRevisionStats />
+        <DsaRevisionToday />
+        <DsaRevisionCalendar />
+      </div>
+
+      {/* Coding Platforms Synchronization Section */}
+      <DsaPlatformSync />
+
+      {/* Empty State Banner when 0 total tracked */}
+      {!isAnalyticsLoading && analyticsData && analyticsData.summary?.totalTracked === 0 && (
+        <div className="p-8 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 text-center space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mx-auto flex items-center justify-center">
+            <Rocket className="w-6 h-6" />
+          </div>
+          <h3 className="text-lg font-bold text-white">Start your DSA journey</h3>
+          <p className="text-xs text-gray-400 max-w-md mx-auto">
+            Track solved problems, build your streak, and get personalized recommendations.
+          </p>
+          <Button size="sm" variant="primary" onClick={() => {
+            const el = document.getElementById('problems-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}>
+            Explore Problems
+          </Button>
+        </div>
+      )}
 
       {/* Overall Progress Bar */}
       <div className="glass-panel p-4 rounded-xl border border-gray-800 space-y-2">
         <div className="flex justify-between items-center text-xs font-semibold text-gray-300">
           <span>DSA Practice System Progress</span>
-          <span>{stats?.completionPercentage || 0}% Completed</span>
+          <span>{completionPercent}% Completed</span>
         </div>
-        <ProgressBar progress={stats?.completionPercentage || 0} color="emerald" />
+        <ProgressBar progress={completionPercent} color="emerald" />
       </div>
 
       {/* Toolbar Filters */}
-      <div className="glass-panel p-4 rounded-xl border border-gray-800 flex flex-wrap items-center justify-between gap-4">
+      <div id="problems-section" className="glass-panel p-4 rounded-xl border border-gray-800 flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
           <div className="flex items-center space-x-2 text-xs text-gray-400 font-semibold">
             <Filter className="w-4 h-4" />

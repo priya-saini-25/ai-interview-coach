@@ -201,6 +201,19 @@ exports.solveProblem = async (req, res, next) => {
       });
     }
 
+    // Automatically create/update spaced repetition revision record
+    try {
+      await dsaRevisionService.createOrUpdateRevisionOnSolve(
+        userId,
+        problem ? problem.id : problemId,
+        topicTitle,
+        topicCategory,
+        topicDifficulty
+      );
+    } catch (e) {
+      console.warn('Failed to create spaced repetition revision:', e.message);
+    }
+
     // Create notification for DSA problem completion
     await Notification.create({
       user: userId,
@@ -451,3 +464,576 @@ exports.getStats = async (req, res, next) => {
     next(error);
   }
 };
+
+const PlatformProfile = require('../models/PlatformProfile');
+const platformSyncService = require('../services/platformSyncService');
+
+/**
+ * @desc    Connect / update user competitive programming platform handles
+ * @route   POST /api/dsa/platforms/connect
+ * @access  Private
+ */
+exports.connectPlatforms = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const { leetcode, codeforces, codechef, hackerrank } = req.body || {};
+
+    let profile = await PlatformProfile.findOne({ user: userId });
+    if (!profile) {
+      profile = new PlatformProfile({ user: userId, handles: {}, stats: {} });
+    }
+
+    const updatedHandles = { ...profile.handles };
+
+    // Validate and update only supplied handles
+    const platforms = [
+      { name: 'leetcode', val: leetcode },
+      { name: 'codeforces', val: codeforces },
+      { name: 'codechef', val: codechef },
+      { name: 'hackerrank', val: hackerrank },
+    ];
+
+    for (const { name, val } of platforms) {
+      if (val !== undefined && val !== null) {
+        const trimmed = String(val).trim();
+        if (trimmed !== '') {
+          const isValid = platformSyncService.validatePlatformHandle(name, trimmed);
+          if (!isValid) {
+            return res.status(400).json({
+              success: false,
+              message: `Invalid ${name} handle format. Usernames must be 3-30 alphanumeric characters.`,
+            });
+          }
+          updatedHandles[name] = trimmed;
+        } else {
+          updatedHandles[name] = '';
+        }
+      }
+    }
+
+    profile.handles = updatedHandles;
+    await profile.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Platform handles updated successfully.',
+      data: {
+        handles: profile.handles,
+        stats: profile.stats,
+        lastSyncedAt: profile.lastSyncedAt,
+        lastSyncStatus: profile.lastSyncStatus,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Trigger sync for user's connected DSA platform profiles
+ * @route   POST /api/dsa/platforms/sync
+ * @access  Private
+ */
+exports.syncPlatforms = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const ignoreCooldown = req.query.ignoreCooldown === 'true';
+
+    const syncResult = await platformSyncService.syncUserPlatforms(userId, { ignoreCooldown });
+
+    return res.status(200).json({
+      success: true,
+      results: syncResult.results,
+      profile: {
+        handles: syncResult.profile.handles,
+        stats: syncResult.profile.stats,
+        lastSyncedAt: syncResult.profile.lastSyncedAt,
+        lastSyncStatus: syncResult.profile.lastSyncStatus,
+        lastSyncError: syncResult.profile.lastSyncError,
+      },
+    });
+  } catch (error) {
+    if (error.statusCode === 429 || error.isCooldown) {
+      return res.status(429).json({
+        success: false,
+        message: error.message || 'Please wait before syncing again.',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get user's connected platform handles and cached statistics
+ * @route   GET /api/dsa/platforms
+ * @access  Private
+ */
+exports.getPlatformProfiles = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+
+    let profile = await PlatformProfile.findOne({ user: userId });
+
+    if (!profile) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          handles: { leetcode: '', codeforces: '', codechef: '', hackerrank: '' },
+          stats: {
+            leetcode: { totalSolved: 0, easy: 0, medium: 0, hard: 0 },
+            codeforces: { rating: 0, rank: 'Unrated', totalSolved: 0, acceptedSubmissions: 0 },
+            codechef: { rating: 0, stars: '1★', totalSolved: 0 },
+            hackerrank: { badgeStars: 0, totalSolved: 0 },
+          },
+          lastSyncedAt: null,
+          lastSyncStatus: 'Never Synced',
+          lastSyncError: '',
+        },
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        handles: profile.handles,
+        stats: profile.stats,
+        lastSyncedAt: profile.lastSyncedAt,
+        lastSyncStatus: profile.lastSyncStatus,
+        lastSyncError: profile.lastSyncError,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const dsaAnalyticsService = require('../services/dsaAnalyticsService');
+
+/**
+ * @desc    Get user's comprehensive DSA progress analytics
+ * @route   GET /api/dsa/analytics
+ * @access  Private
+ */
+exports.getAnalytics = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+
+    const [user, userProgress] = await Promise.all([
+      User.findById(userId).select('targetRole'),
+      DsaProgress.find({ user: userId }),
+    ]);
+
+    const analytics = await dsaAnalyticsService.getDSAAnalytics(
+      userId,
+      userProgress,
+      user?.targetRole || ''
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: analytics,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const DsaAIAnalysis = require('../models/DsaAIAnalysis');
+const dsaAnalysisService = require('../services/ai/dsaAnalysisService');
+
+/**
+ * @desc    Get AI qualitative weakness analysis for user's DSA progress
+ * @route   POST /api/dsa/ai-analysis
+ * @access  Private
+ */
+exports.getAiAnalysis = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+
+    const [user, userProgress] = await Promise.all([
+      User.findById(userId).select('targetRole'),
+      DsaProgress.find({ user: userId }),
+    ]);
+
+    const analytics = await dsaAnalyticsService.getDSAAnalytics(
+      userId,
+      userProgress,
+      user?.targetRole || ''
+    );
+
+    const snapshotHash = dsaAnalysisService.generateAnalyticsSnapshotHash(analytics);
+
+    // 1. Check cache
+    const cachedAnalysis = await DsaAIAnalysis.findOne({ user: userId });
+
+    if (
+      cachedAnalysis &&
+      cachedAnalysis.analyticsSnapshotHash === snapshotHash &&
+      cachedAnalysis.expiresAt &&
+      new Date(cachedAnalysis.expiresAt) > new Date()
+    ) {
+      return res.status(200).json({
+        success: true,
+        data: cachedAnalysis.analysis,
+        cached: true,
+      });
+    }
+
+    // 2. Call Gemini for fresh qualitative analysis
+    try {
+      const aiResponse = await dsaAnalysisService.analyzeDSAWeaknessWithGemini(
+        analytics,
+        user?.targetRole || ''
+      );
+
+      // Save to cache (24 hours expiration)
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await DsaAIAnalysis.findOneAndUpdate(
+        { user: userId },
+        {
+          $set: {
+            user: userId,
+            analyticsSnapshotHash: snapshotHash,
+            analysis: aiResponse,
+            generatedAt: new Date(),
+            expiresAt,
+          },
+        },
+        { upsert: true, new: true }
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: aiResponse,
+        cached: false,
+      });
+    } catch (aiError) {
+      console.warn('Gemini DSA AI analysis error, returning fallback:', aiError.message);
+      return res.status(200).json({
+        success: true,
+        data: {
+          aiAvailable: false,
+          message: 'AI qualitative analysis is temporarily unavailable.',
+          deterministicWeakTopics: analytics.weakTopics,
+          summary: analytics.summary,
+        },
+      });
+    }
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const DsaRoadmap = require('../models/DsaRoadmap');
+const dsaRoadmapService = require('../services/dsaRoadmapService');
+
+/**
+ * @desc    Generate or retrieve user's personalized 7-Day DSA Roadmap
+ * @route   POST /api/dsa/roadmap/generate
+ * @access  Private
+ */
+exports.generateRoadmap = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const forceRegenerate = req.query.force === 'true';
+
+    const [user, userProgress] = await Promise.all([
+      User.findById(userId).select('targetRole'),
+      DsaProgress.find({ user: userId }),
+    ]);
+
+    const analytics = await dsaAnalyticsService.getDSAAnalytics(
+      userId,
+      userProgress,
+      user?.targetRole || ''
+    );
+
+    if (forceRegenerate) {
+      await DsaRoadmap.updateMany({ user: userId, status: 'active' }, { $set: { status: 'expired' } });
+    }
+
+    const roadmap = await dsaRoadmapService.generateUser7DayRoadmap(
+      userId,
+      userProgress,
+      analytics,
+      user?.targetRole || ''
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: roadmap,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get user's active 7-Day DSA Roadmap
+ * @route   GET /api/dsa/roadmap
+ * @access  Private
+ */
+exports.getRoadmap = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+
+    let roadmap = await DsaRoadmap.findOne({ user: userId, status: 'active' });
+
+    if (!roadmap) {
+      // Auto-generate if user does not have an active roadmap yet
+      const [user, userProgress] = await Promise.all([
+        User.findById(userId).select('targetRole'),
+        DsaProgress.find({ user: userId }),
+      ]);
+
+      const analytics = await dsaAnalyticsService.getDSAAnalytics(
+        userId,
+        userProgress,
+        user?.targetRole || ''
+      );
+
+      roadmap = await dsaRoadmapService.generateUser7DayRoadmap(
+        userId,
+        userProgress,
+        analytics,
+        user?.targetRole || ''
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: roadmap,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Mark a roadmap problem as completed or uncompleted
+ * @route   PUT /api/dsa/roadmap/problem/:problemId
+ * @access  Private
+ */
+exports.updateRoadmapProblem = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const problemId = req.params.problemId;
+    const { completed = true } = req.body;
+
+    const roadmap = await DsaRoadmap.findOne({ user: userId, status: 'active' });
+    if (!roadmap) {
+      return res.status(404).json({
+        success: false,
+        message: 'No active roadmap found.',
+      });
+    }
+
+    let problemFound = false;
+
+    roadmap.days.forEach((day) => {
+      day.problems.forEach((p) => {
+        if (p.problemId === problemId) {
+          p.completed = Boolean(completed);
+          p.completedAt = completed ? new Date() : null;
+          problemFound = true;
+        }
+      });
+    });
+
+    if (!problemFound) {
+      return res.status(404).json({
+        success: false,
+        message: 'Problem not found in current 7-day roadmap.',
+      });
+    }
+
+    // Recalculate roadmap completion stats
+    let total = 0;
+    let done = 0;
+    roadmap.days.forEach((day) => {
+      day.problems.forEach((p) => {
+        total++;
+        if (p.completed) done++;
+      });
+    });
+
+    roadmap.totalProblems = total;
+    roadmap.completedProblems = done;
+    roadmap.completionPercentage = total === 0 ? 0 : Math.round((done / total) * 100);
+
+    if (done === total && total > 0) {
+      roadmap.status = 'completed';
+    }
+
+    await roadmap.save();
+
+    // Sync with global DsaProgress so manual tracking stays updated without duplicates
+    if (completed) {
+      const problem = dsaRecommendationService.getProblemById(problemId);
+      let dsaProgress = await DsaProgress.findOne({
+        user: userId,
+        $or: [{ problemId: problemId }, { topic: problem ? problem.title : problemId }],
+      });
+
+      if (!dsaProgress) {
+        await DsaProgress.create({
+          user: userId,
+          problemId: problemId,
+          topic: problem ? problem.title : problemId,
+          category: problem ? problem.category : 'General',
+          difficulty: problem ? problem.difficulty : 'Medium',
+          status: 'Solved',
+          completed: true,
+          completedAt: new Date(),
+        });
+      } else if (!dsaProgress.completed) {
+        dsaProgress.status = 'Solved';
+        dsaProgress.completed = true;
+        dsaProgress.completedAt = new Date();
+        await dsaProgress.save();
+      }
+
+      // Automatically sync spaced repetition revision record
+      try {
+        await dsaRevisionService.createOrUpdateRevisionOnSolve(
+          userId,
+          problemId,
+          problem ? problem.title : problemId,
+          problem ? problem.category : 'General',
+          problem ? problem.difficulty : 'Medium'
+        );
+      } catch (e) {
+        console.warn('Failed to create spaced repetition revision from roadmap:', e.message);
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: completed ? 'Roadmap problem marked as solved!' : 'Roadmap problem marked as uncompleted.',
+      data: roadmap,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const dsaRevisionService = require('../services/dsaRevisionService');
+
+/**
+ * @desc    Get today's due, overdue, and upcoming spaced repetition revisions
+ * @route   GET /api/dsa/revision/today
+ * @access  Private
+ */
+exports.getDueRevisions = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+
+    const [user, userProgress] = await Promise.all([
+      User.findById(userId).select('targetRole'),
+      DsaProgress.find({ user: userId }),
+    ]);
+
+    const analytics = await dsaAnalyticsService.getDSAAnalytics(
+      userId,
+      userProgress,
+      user?.targetRole || ''
+    );
+
+    const revisionsData = await dsaRevisionService.getDueToday(userId, analytics);
+
+    return res.status(200).json({
+      success: true,
+      data: revisionsData,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Record outcome of a problem revision review (success/failure/skipped)
+ * @route   POST /api/dsa/revision/:problemId/review
+ * @access  Private
+ */
+exports.reviewProblem = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const problemId = req.params.problemId;
+    const { result = 'success', difficultyRating = 3 } = req.body;
+
+    const [user, userProgress] = await Promise.all([
+      User.findById(userId).select('targetRole'),
+      DsaProgress.find({ user: userId }),
+    ]);
+
+    const analytics = await dsaAnalyticsService.getDSAAnalytics(
+      userId,
+      userProgress,
+      user?.targetRole || ''
+    );
+
+    const weakTopicNames = (analytics.weakTopics || []).map((w) => w.topic);
+
+    const updatedRevision = await dsaRevisionService.recordReview(
+      userId,
+      problemId,
+      result,
+      difficultyRating,
+      weakTopicNames
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: `Revision result '${result}' recorded successfully.`,
+      data: updatedRevision,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get spaced repetition revision statistics and streaks
+ * @route   GET /api/dsa/revision/stats
+ * @access  Private
+ */
+exports.getRevisionStats = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const stats = await dsaRevisionService.getRevisionStats(userId);
+
+    return res.status(200).json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get 30-day upcoming revision calendar
+ * @route   GET /api/dsa/revision/upcoming
+ * @access  Private
+ */
+exports.getUpcomingRevisionCalendar = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const days = parseInt(req.query.days, 10) || 30;
+
+    const calendar = await dsaRevisionService.getUpcomingCalendar(userId, days);
+
+    return res.status(200).json({
+      success: true,
+      data: calendar,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+
+
