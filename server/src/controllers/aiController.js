@@ -4,6 +4,11 @@ const Notification = require('../models/Notification');
 const { extractTextFromPDF } = require('../services/ai/pdfExtractionService');
 const { analyzeResumeWithGemini } = require('../services/ai/geminiService');
 const { safeParseAIJson } = require('../utils/jsonUtils');
+const {
+  normalizeResumeText,
+  calculateContentHash,
+  calculateDeterministicAtsScore,
+} = require('../utils/atsScorer');
 
 // @desc    Get user's latest resume analysis
 // @route   GET /api/ai/resume-analysis
@@ -66,10 +71,42 @@ exports.analyzeResume = async (req, res, next) => {
     // 4. Extract text from the PDF via the AI service layer
     const rawText = await extractTextFromPDF(user.resume);
 
-    // 5. Analyze extracted resume text with Gemini AI service
+    // Normalize extracted text & calculate content hash and deterministic score
+    const normalizedText = normalizeResumeText(rawText);
+    const contentHash = calculateContentHash(normalizedText);
+    const deterministicScore = calculateDeterministicAtsScore(rawText);
+
+    // 5. Check if user already has an analysis with the exact same content hash
+    const existingAnalysis = await ResumeAnalysis.findOne({ user: user._id });
+
+    if (
+      existingAnalysis &&
+      existingAnalysis.contentHash === contentHash &&
+      Array.isArray(existingAnalysis.strengths) &&
+      existingAnalysis.strengths.length > 0
+    ) {
+      // Reuse existing qualitative feedback, ensure overallScore is deterministic
+      existingAnalysis.overallScore = deterministicScore;
+      existingAnalysis.resumeUrl = user.resume;
+      await existingAnalysis.save();
+
+      return res.status(200).json({
+        success: true,
+        analysis: {
+          overallScore: existingAnalysis.overallScore,
+          strengths: existingAnalysis.strengths,
+          weaknesses: existingAnalysis.weaknesses,
+          missingSkills: existingAnalysis.missingSkills,
+          atsSuggestions: existingAnalysis.atsSuggestions,
+          improvementSuggestions: existingAnalysis.improvementSuggestions,
+        },
+      });
+    }
+
+    // 6. Analyze extracted resume text with Gemini AI service for qualitative feedback
     const geminiRawResponse = await analyzeResumeWithGemini(rawText);
 
-    // 6. Parse Gemini JSON response
+    // Parse Gemini JSON response
     let parsedAnalysis;
     try {
       parsedAnalysis = safeParseAIJson(geminiRawResponse);
@@ -81,10 +118,9 @@ exports.analyzeResume = async (req, res, next) => {
       });
     }
 
-    // Validate expected structure of parsed response
+    // Validate expected structure of parsed qualitative response
     const isValidFormat =
       parsedAnalysis &&
-      typeof parsedAnalysis.overallScore === 'number' &&
       Array.isArray(parsedAnalysis.strengths) &&
       Array.isArray(parsedAnalysis.weaknesses) &&
       Array.isArray(parsedAnalysis.missingSkills) &&
@@ -99,7 +135,7 @@ exports.analyzeResume = async (req, res, next) => {
       });
     }
 
-    // 7. Save / Upsert analysis into MongoDB
+    // 7. Save / Upsert analysis into MongoDB using the deterministic ATS score
     const savedAnalysis = await ResumeAnalysis.findOneAndUpdate(
       { user: user._id },
       {
@@ -107,7 +143,8 @@ exports.analyzeResume = async (req, res, next) => {
           user: user._id,
           resumeUrl: user.resume,
           rawText: rawText,
-          overallScore: parsedAnalysis.overallScore,
+          contentHash: contentHash,
+          overallScore: deterministicScore,
           strengths: parsedAnalysis.strengths,
           weaknesses: parsedAnalysis.weaknesses,
           missingSkills: parsedAnalysis.missingSkills,

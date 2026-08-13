@@ -44,6 +44,10 @@ const resumeAnalysisSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    contentHash: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,
