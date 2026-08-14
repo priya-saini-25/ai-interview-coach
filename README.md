@@ -2,7 +2,7 @@
 
 > An AI-powered placement preparation platform that helps students prepare for technical interviews through personalized roadmaps, DSA tracking, AI-powered resume analysis, mock interviews, company preparation, and an interactive AI mentor.
 
-**Live Demo:** https://ai-interview-coach-bt9gmxs85-ai-2c28.vercel.app/
+**Live Demo:** https://ai-interview-coach-kwgncrav2-ai-2c28.vercel.app/
 
 **Backend API:** https://ai-interview-coach-api-wgor.onrender.com/
 
